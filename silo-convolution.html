@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Convolution Visualization | Silo</title>
+    <style>
+        body {
+            margin: 0;
+            background: #050505;
+            color: #e0e0e0;
+            font-family: 'Space Grotesk', sans-serif;
+            overflow: hidden;
+        }
+
+        .nav {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            z-index: 100;
+        }
+
+        a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        a:hover {
+            color: #fff;
+        }
+
+        .hud {
+            position: absolute;
+            bottom: 2rem;
+            left: 2rem;
+            color: #fff;
+            pointer-events: none;
+            mix-blend-mode: difference;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin: 0;
+            letter-spacing: -0.05em;
+        }
+
+        p {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin: 0;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .controls {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .controls label {
+            font-size: 0.9rem;
+        }
+
+        .controls input {
+            width: 200px;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .canvas-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            gap: 1rem;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="nav"><a href="silo.html">← Silo</a></div>
+    <div class="hud">
+        <p>Experiment 20</p>
+        <h1>CONVOLUTION VISUALIZATION</h1>
+    </div>
+    <div class="controls">
+        <label for="size">Kernel Size: <span id="sizeVal">3</span></label>
+        <input type="range" id="size" min="1" max="9" step="2" value="3">
+    </div>
+    <div class="canvas-container">
+        <canvas id="srcCanvas" width="300" height="300"></canvas>
+        <canvas id="dstCanvas" width="300" height="300"></canvas>
+    </div>
+    <script>
+        const srcCanvas = document.getElementById('srcCanvas');
+        const dstCanvas = document.getElementById('dstCanvas');
+        const srcCtx = srcCanvas.getContext('2d');
+        const dstCtx = dstCanvas.getContext('2d');
+        const sizeSlider = document.getElementById('size');
+        const sizeVal = document.getElementById('sizeVal');
+        // Load a sample image (generated pattern)
+        function drawSource() {
+            const img = srcCtx.createImageData(srcCanvas.width, srcCanvas.height);
+            for (let y = 0; y < img.height; y++) {
+                for (let x = 0; x < img.width; x++) {
+                    const i = (y * img.width + x) * 4;
+                    const v = ((x >> 4) & 1) ^ ((y >> 4) & 1) ? 200 : 50; // checker pattern
+                    img.data[i] = v; img.data[i + 1] = v; img.data[i + 2] = v; img.data[i + 3] = 255;
+                }
+            }
+            srcCtx.putImageData(img, 0, 0);
+        }
+        function convolve(kernelSize) {
+            const src = srcCtx.getImageData(0, 0, srcCanvas.width, srcCanvas.height);
+            const dst = srcCtx.createImageData(src.width, src.height);
+            const half = Math.floor(kernelSize / 2);
+            // simple average kernel
+            const kernelArea = kernelSize * kernelSize;
+            for (let y = 0; y < src.height; y++) {
+                for (let x = 0; x < src.width; x++) {
+                    let sum = 0;
+                    for (let ky = -half; ky <= half; ky++) {
+                        for (let kx = -half; kx <= half; kx++) {
+                            const ix = Math.min(src.width - 1, Math.max(0, x + kx));
+                            const iy = Math.min(src.height - 1, Math.max(0, y + ky));
+                            const idx = (iy * src.width + ix) * 4;
+                            sum += src.data[idx]; // use red channel (grayscale)
+                        }
+                    }
+                    const outIdx = (y * src.width + x) * 4;
+                    const val = sum / kernelArea;
+                    dst.data[outIdx] = dst.data[outIdx + 1] = dst.data[outIdx + 2] = val;
+                    dst.data[outIdx + 3] = 255;
+                }
+            }
+            dstCtx.putImageData(dst, 0, 0);
+        }
+        sizeSlider.addEventListener('input', () => {
+            const sz = parseInt(sizeSlider.value);
+            sizeVal.textContent = sz;
+            convolve(sz);
+        });
+        drawSource();
+        convolve(parseInt(sizeSlider.value));
+    </script>
+</body>
+
+</html>

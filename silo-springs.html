@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Springs | Silo</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .nav {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            z-index: 100;
+        }
+
+        a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        a:hover {
+            color: #fff;
+        }
+
+        .hud {
+            position: absolute;
+            bottom: 3rem;
+            left: 3rem;
+            color: #fff;
+            pointer-events: none;
+            mix-blend-mode: difference;
+        }
+
+        h1 {
+            font-size: 3rem;
+            line-height: 1;
+            margin: 0;
+            letter-spacing: -0.05em;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin: 0;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .hint {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 1.5rem;
+            pointer-events: none;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            animation: fadeOut 2s 3s forwards;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="nav"><a href="silo.html">← SILO</a></div>
+    <div class="hint">Interact</div>
+    <div class="hud">
+        <p>Experiment 11</p>
+        <h1>ELASTIC</h1>
+        <div style="margin-top:10px; color:#f0a;">SOFT BODY PHYSICS</div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        const COLS = 20;
+        const ROWS = 15;
+        const SPACING = 40;
+        const K = 0.5; // Spring constant
+        const DAMPING = 0.9;
+        const GRAVITY = 0.5;
+
+        let particles = [];
+        let springs = [];
+
+        class Particle {
+            constructor(x, y, pinned = false) {
+                this.x = x; this.y = y;
+                this.ox = x; this.oy = y; // Old pos for Verlet? Or just Vel
+                this.vx = 0; this.vy = 0;
+                this.pinned = pinned;
+            }
+            update() {
+                if (this.pinned) return;
+                this.vy += GRAVITY;
+                this.vx *= DAMPING;
+                this.vy *= DAMPING;
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Floor
+                if (this.y > height) {
+                    this.y = height;
+                    this.vy *= -0.5;
+                }
+                // Walls
+                if (this.x < 0) { this.x = 0; this.vx *= -0.5; }
+                if (this.x > width) { this.x = width; this.vx *= -0.5; }
+            }
+        }
+
+        class Spring {
+            constructor(p1, p2, len) {
+                this.p1 = p1; this.p2 = p2;
+                this.len = len;
+            }
+            update() {
+                const dx = this.p2.x - this.p1.x;
+                const dy = this.p2.y - this.p1.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const force = (dist - this.len) * K;
+
+                const fx = (dx / dist) * force;
+                const fy = (dy / dist) * force;
+
+                if (!this.p1.pinned) { this.p1.vx += fx; this.p1.vy += fy; }
+                if (!this.p2.pinned) { this.p2.vx -= fx; this.p2.vy -= fy; }
+            }
+            draw() {
+                const dx = this.p2.x - this.p1.x;
+                const dy = this.p2.y - this.p1.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                // Color based on tension
+                let tension = (dist - this.len);
+                let r = Math.min(255, Math.abs(tension) * 10);
+                let b = 255 - r;
+
+                ctx.strokeStyle = `rgb(${r}, 0, ${b})`;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(this.p1.x, this.p1.y);
+                ctx.lineTo(this.p2.x, this.p2.y);
+                ctx.stroke();
+            }
+        }
+
+        function init() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            particles = [];
+            springs = [];
+
+            const startX = (width - COLS * SPACING) / 2;
+            const startY = 100;
+
+            // Create Grid
+            for (let y = 0; y < ROWS; y++) {
+                for (let x = 0; x < COLS; x++) {
+                    let p = new Particle(startX + x * SPACING, startY + y * SPACING, y === 0); // Pin top row
+                    particles.push(p);
+
+                    if (x > 0) springs.push(new Spring(particles[particles.length - 2], p, SPACING));
+                    if (y > 0) springs.push(new Spring(particles[particles.length - COLS - 1], p, SPACING));
+                    // Shearing springs?
+                    // if(x>0 && y>0) springs.push(new Spring(particles[particles.length-COLS-2], p, SPACING*1.414));
+                }
+            }
+        }
+
+        let dragParticle = null;
+
+        window.addEventListener('mousedown', e => {
+            let mouseX = e.clientX;
+            let mouseY = e.clientY;
+            let minDist = 50;
+
+            for (let p of particles) {
+                let d = Math.sqrt((p.x - mouseX) ** 2 + (p.y - mouseY) ** 2);
+                if (d < minDist) {
+                    minDist = d;
+                    dragParticle = p;
+                }
+            }
+        });
+        window.addEventListener('mouseup', () => dragParticle = null);
+        window.addEventListener('mousemove', e => {
+            if (dragParticle) {
+                dragParticle.x = e.clientX;
+                dragParticle.y = e.clientY;
+                dragParticle.vx = 0;
+                dragParticle.vy = 0;
+            }
+        });
+
+        window.addEventListener('resize', init);
+
+        init();
+
+        function loop() {
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.fillRect(0, 0, width, height);
+
+            for (let s of springs) { s.update(); s.draw(); }
+            for (let p of particles) { p.update(); }
+
+            // Draw Particles
+            ctx.fillStyle = '#fff';
+            for (let p of particles) {
+                // ctx.fillRect(p.x-2, p.y-2, 4, 4);
+            }
+
+            requestAnimationFrame(loop);
+        }
+        loop();
+
+    </script>
+</body>
+
+</html>

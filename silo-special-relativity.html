@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Special Relativity | Silo</title>
+    <style>
+        body {
+            margin: 0;
+            background: #050505;
+            color: #e0e0e0;
+            font-family: 'Space Grotesk', sans-serif;
+            overflow: hidden;
+        }
+
+        .nav {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            z-index: 100;
+        }
+
+        a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        a:hover {
+            color: #fff;
+        }
+
+        .hud {
+            position: absolute;
+            bottom: 2rem;
+            left: 2rem;
+            color: #fff;
+            pointer-events: none;
+            mix-blend-mode: difference;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin: 0;
+            letter-spacing: -0.05em;
+        }
+
+        p {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin: 0;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .controls {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .controls label {
+            font-size: 0.9rem;
+        }
+
+        .controls input {
+            width: 200px;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="nav"><a href="silo.html">← Silo</a></div>
+    <div class="hud">
+        <p>Experiment 13</p>
+        <h1>SPECIAL RELATIVITY</h1>
+    </div>
+    <div class="controls">
+        <label for="vel">Velocity (fraction of c): <span id="velVal">0.00</span></label>
+        <input type="range" id="vel" min="0" max="99" value="0">
+    </div>
+    <canvas id="canvas"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        const rodLength = 300; // original length in px
+        const rodHeight = 20;
+        const clockRadius = 60;
+        const velSlider = document.getElementById('vel');
+        const velVal = document.getElementById('velVal');
+        let v = 0; // fraction of c
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+        velSlider.addEventListener('input', () => {
+            v = velSlider.value / 100; // 0-0.99
+            velVal.textContent = v.toFixed(2);
+        });
+        let clockAngle = 0;
+        function loop() {
+            ctx.fillStyle = '#050505';
+            ctx.fillRect(0, 0, width, height);
+            // compute gamma
+            const gamma = 1 / Math.sqrt(1 - v * v);
+            const contracted = rodLength / gamma;
+            // draw rod centered
+            ctx.fillStyle = '#00ffaa';
+            ctx.fillRect((width - contracted) / 2, height / 2 - rodHeight / 2, contracted, rodHeight);
+            // label
+            ctx.fillStyle = '#fff';
+            ctx.font = '16px Space Grotesk';
+            ctx.fillText(`v/c = ${v.toFixed(2)}  γ = ${gamma.toFixed(2)}`, 20, 30);
+            ctx.fillText(`Length: ${contracted.toFixed(1)}px`, 20, 50);
+            // draw clock
+            const cx = width - 120;
+            const cy = height - 120;
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(0, 0, clockRadius, 0, Math.PI * 2);
+            ctx.stroke();
+            // tick marks
+            for (let i = 0; i < 12; i++) {
+                const ang = i * Math.PI / 6;
+                const x1 = Math.cos(ang) * (clockRadius - 5);
+                const y1 = Math.sin(ang) * (clockRadius - 5);
+                const x2 = Math.cos(ang) * clockRadius;
+                const y2 = Math.sin(ang) * clockRadius;
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+            // second hand (time dilation)
+            const speed = 1 / gamma; // slower as gamma increases
+            clockAngle += speed * 0.05; // base angular speed
+            ctx.rotate(clockAngle);
+            ctx.strokeStyle = '#ff5555';
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, -clockRadius + 10);
+            ctx.stroke();
+            ctx.restore();
+            requestAnimationFrame(loop);
+        }
+        loop();
+    </script>
+</body>
+
+</html>

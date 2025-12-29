@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Optics | Silo</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .nav {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            z-index: 100;
+        }
+
+        a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        a:hover {
+            color: #fff;
+        }
+
+        .hud {
+            position: absolute;
+            bottom: 3rem;
+            left: 3rem;
+            color: #fff;
+            pointer-events: none;
+            mix-blend-mode: difference;
+        }
+
+        h1 {
+            font-size: 3rem;
+            line-height: 1;
+            margin: 0;
+            letter-spacing: -0.05em;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin: 0;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .controls {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            color: #fff;
+        }
+
+        button {
+            background: transparent;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="nav"><a href="silo.html">← SILO</a></div>
+    <div class="hud">
+        <p>Experiment 10</p>
+        <h1>OPTICS</h1>
+        <div style="margin-top:10px; color:#0ff;">RAYTRACING & REFRACTION</div>
+    </div>
+
+    <div class="controls">
+        <button onclick="resetScene()">RESET</button>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        // Scene Objects
+        let rays = [];
+        let walls = [];
+        let lights = [];
+
+        class Vector {
+            constructor(x, y) { this.x = x; this.y = y; }
+            add(v) { return new Vector(this.x + v.x, this.y + v.y); }
+            sub(v) { return new Vector(this.x - v.x, this.y - v.y); }
+            mult(s) { return new Vector(this.x * s, this.y * s); }
+            mag() { return Math.sqrt(this.x * this.x + this.y * this.y); }
+            norm() { let m = this.mag(); return m === 0 ? new Vector(0, 0) : new Vector(this.x / m, this.y / m); }
+            dot(v) { return this.x * v.x + this.y * v.y; }
+        }
+
+        class Wall {
+            constructor(x1, y1, x2, y2, roi = 1.0, isMirror = true) {
+                this.a = new Vector(x1, y1);
+                this.b = new Vector(x2, y2);
+                this.roi = roi; // Refractive Index (1.0 = Air) - Not fully implementing volume refraction yet, just reflection
+                this.isMirror = isMirror;
+            }
+            draw() {
+                ctx.strokeStyle = this.isMirror ? '#fff' : '#444';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(this.a.x, this.a.y);
+                ctx.lineTo(this.b.x, this.b.y);
+                ctx.stroke();
+            }
+        }
+
+        class Ray {
+            constructor(pos, angle, intensity = 1.0, color = '#fff') {
+                this.pos = pos;
+                this.dir = new Vector(Math.cos(angle), Math.sin(angle));
+                this.intensity = intensity;
+            }
+
+            cast(walls) {
+                let closest = null;
+                let record = Infinity;
+                let normal = null;
+                let wallHit = null;
+
+                for (let wall of walls) {
+                    const x1 = wall.a.x; const y1 = wall.a.y;
+                    const x2 = wall.b.x; const y2 = wall.b.y;
+                    const x3 = this.pos.x; const y3 = this.pos.y;
+                    const x4 = this.pos.x + this.dir.x; const y4 = this.pos.y + this.dir.y;
+
+                    const den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+                    if (den === 0) continue;
+
+                    const t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / den;
+                    const u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / den;
+
+                    if (t > 0 && t < 1 && u > 0) {
+                        const pt = new Vector(x1 + t * (x2 - x1), y1 + t * (y2 - y1));
+                        const d = Math.sqrt((pt.x - this.pos.x) ** 2 + (pt.y - this.pos.y) ** 2);
+                        if (d < record) {
+                            record = d;
+                            closest = pt;
+                            wallHit = wall;
+                            // Normal
+                            let dx = x2 - x1;
+                            let dy = y2 - y1;
+                            normal = new Vector(-dy, dx).norm();
+                        }
+                    }
+                }
+                return { pt: closest, wall: wallHit, normal: normal, dist: record };
+            }
+        }
+
+        function init() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            resetScene();
+        }
+
+        function resetScene() {
+            walls = [];
+            // Border
+            walls.push(new Wall(0, 0, width, 0));
+            walls.push(new Wall(width, 0, width, height));
+            walls.push(new Wall(width, height, 0, height));
+            walls.push(new Wall(0, height, 0, 0));
+
+            // Random Mirrors
+            for (let i = 0; i < 8; i++) {
+                let x1 = Math.random() * width;
+                let y1 = Math.random() * height;
+                let x2 = Math.random() * width;
+                let y2 = Math.random() * height;
+                walls.push(new Wall(x1, y1, x2, y2));
+            }
+
+            lights = [{ pos: new Vector(width / 2, height / 2), angle: 0 }];
+        }
+
+        function trace() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+
+            // Draw Walls
+            for (let w of walls) w.draw();
+
+            // Light Source
+            for (let l of lights) {
+                // Interactive Light
+                l.pos.x = mouse.x;
+                l.pos.y = mouse.y;
+
+                // Cast many rays
+                for (let a = 0; a < Math.PI * 2; a += Math.PI / 180) { // 360 rays
+                    let ray = new Ray(l.pos, a);
+                    let bounces = 0;
+
+                    ctx.beginPath();
+                    ctx.moveTo(ray.pos.x, ray.pos.y);
+
+                    // Bounce loop
+                    while (bounces < 3) { // Max 3 bounces
+                        const hit = ray.cast(walls);
+                        if (hit.pt) {
+                            ctx.lineTo(hit.pt.x, hit.pt.y);
+
+                            // Reflect
+                            // R = D - 2(D.N)N
+                            if (hit.wall.isMirror) {
+                                let dot = ray.dir.dot(hit.normal);
+                                let reflect = ray.dir.sub(hit.normal.mult(2 * dot));
+
+                                ray = new Ray(hit.pt.add(reflect.mult(0.1)), 0); // Offset to avoid self-collision
+                                ray.dir = reflect;
+                            } else {
+                                break; // Absorb
+                            }
+                            bounces++;
+                        } else {
+                            // Inf
+                            ctx.lineTo(ray.pos.x + ray.dir.x * 2000, ray.pos.y + ray.dir.y * 2000);
+                            break;
+                        }
+                    }
+                    ctx.strokeStyle = `rgba(0, 255, 255, 0.1)`;
+                    ctx.stroke();
+                }
+            }
+        }
+
+        let mouse = { x: 500, y: 500 };
+        window.addEventListener('mousemove', e => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        window.addEventListener('resize', init);
+
+        init();
+
+        function loop() {
+            trace();
+            requestAnimationFrame(loop);
+        }
+        loop();
+
+    </script>
+</body>
+
+</html>

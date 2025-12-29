@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Relativity | Silo</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .nav {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            z-index: 100;
+        }
+
+        a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        a:hover {
+            color: #fff;
+        }
+
+        .hud {
+            position: absolute;
+            bottom: 3rem;
+            left: 3rem;
+            color: #fff;
+            pointer-events: none;
+            mix-blend-mode: difference;
+        }
+
+        h1 {
+            font-size: 3rem;
+            line-height: 1;
+            margin: 0;
+            letter-spacing: -0.05em;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin: 0;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .mass-info {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            color: #fff;
+            text-align: center;
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: 0.2s;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="nav"><a href="silo.html">← SILO</a></div>
+    <div class="hud">
+        <p>Experiment 12</p>
+        <h1>RELATIVITY</h1>
+        <div style="margin-top:10px; color:#aaa;">SPACETIME CURVATURE</div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        let mouse = { x: -1000, y: -1000 };
+        let mass = 10000;
+
+        // Grid points
+        const GRID_SIZE = 40;
+        let points = [];
+
+        function init() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            points = [];
+
+            for (let y = 0; y <= height + GRID_SIZE; y += GRID_SIZE) {
+                for (let x = 0; x <= width + GRID_SIZE; x += GRID_SIZE) {
+                    points.push({
+                        ox: x, oy: y, // Original
+                        x: x, y: y
+                    });
+                }
+            }
+        }
+
+        window.addEventListener('mousemove', e => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        window.addEventListener('resize', init);
+        init();
+
+        function loop() {
+            // Dark Background
+            ctx.fillStyle = '#050505';
+            ctx.fillRect(0, 0, width, height);
+
+            // Calculation: Gravity Well
+            // Shift points towards mouse
+
+            for (let p of points) {
+                let dx = mouse.x - p.ox;
+                let dy = mouse.y - p.oy;
+                let distSq = dx * dx + dy * dy;
+                let dist = Math.sqrt(distSq);
+
+                // Force ~ 1/dist
+                // Distortion: We pull point towards center
+                // Amount to pull depends on Gravity.
+
+                // Avoid singularity
+                if (dist < 50) dist = 50;
+
+                let force = mass / dist; // Simple inverse
+                if (force > dist) force = dist * 0.9;
+
+                // Direction
+                let dirX = dx / dist;
+                let dirY = dy / dist;
+
+                p.x = p.ox + dirX * force;
+                p.y = p.oy + dirY * force;
+            }
+
+            // Draw Grid
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+
+            // Draw horizontal lines
+            for (let y = 0; y <= height; y += GRID_SIZE) {
+                // Find points in this row?
+                // Easier to index if we store as 2D array, but flat list ok if sorted
+                // Reconstructing grid logic quickly:
+
+                let cols = Math.ceil(width / GRID_SIZE) + 2;
+                let yIdx = Math.round(y / GRID_SIZE);
+
+                // Draw line through row
+                for (let x = 0; x <= width; x += GRID_SIZE) {
+                    let xIdx = Math.round(x / GRID_SIZE);
+                    // Find point
+                    // We need correct index.
+                    // This is slow. Let's just iterate array carefully.
+                }
+            }
+            // Optimization: Just draw dots for now to verify physics? 
+            // Better: Lines are essential for grid visual.
+
+            let cols = Math.floor(width / GRID_SIZE) + 2;
+            let rows = Math.floor(height / GRID_SIZE) + 2;
+
+            // Draw H Lines
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols - 1; c++) {
+                    let idx = r * cols + c;
+                    if (idx + 1 >= points.length) break;
+                    let p1 = points[idx];
+                    let p2 = points[idx + 1];
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                }
+            }
+
+            // Draw V Lines
+            for (let c = 0; c < cols; c++) {
+                for (let r = 0; r < rows - 1; r++) {
+                    let idx = r * cols + c;
+                    let idx2 = (r + 1) * cols + c;
+                    if (idx2 >= points.length) break;
+                    let p1 = points[idx];
+                    let p2 = points[idx2];
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                }
+            }
+            ctx.stroke();
+
+            // Draw Event Horizon (Mouse)
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(mouse.x, mouse.y, 30, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Accretion Disk (Glow)
+            let g = ctx.createRadialGradient(mouse.x, mouse.y, 30, mouse.x, mouse.y, 100);
+            g.addColorStop(0, 'rgba(255,100,0,0.5)');
+            g.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = g;
+            ctx.fill();
+
+            requestAnimationFrame(loop);
+        }
+        loop();
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "anemptyship-site",
+  "private": true,
+  "scripts": {
+    "start:town": "node server/town-server.js"
+  },
+  "dependencies": {
+    "ws": "^8.16.0"
+  }
+}

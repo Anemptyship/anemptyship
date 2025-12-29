@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Fractal | Silo</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .nav {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            z-index: 100;
+        }
+
+        a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        a:hover {
+            color: #fff;
+        }
+
+        .hud {
+            position: absolute;
+            bottom: 3rem;
+            left: 3rem;
+            color: #fff;
+            pointer-events: none;
+            mix-blend-mode: difference;
+        }
+
+        h1 {
+            font-size: 3rem;
+            line-height: 1;
+            margin: 0;
+            letter-spacing: -0.05em;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin: 0;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .hint {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 1.5rem;
+            pointer-events: none;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            animation: fadeOut 2s 3s forwards;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="nav"><a href="silo.html">← SILO</a></div>
+    <div class="hint">Scroll / Click</div>
+    <div class="hud">
+        <p>Experiment 16</p>
+        <h1>FRACTAL</h1>
+        <div style="margin-top:10px; color:#a0f;">MANDELBROT SET</div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const gl = canvas.getContext('webgl');
+
+        const vs = `
+            attribute vec2 position;
+            void main() {
+                gl_Position = vec4(position, 0, 1);
+            }
+        `;
+
+        const fs = `
+            precision highp float;
+            uniform vec2 resolution;
+            uniform vec2 center;
+            uniform float zoom;
+            
+            void main() {
+                vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+                vec2 c = center + uv * (3.0 / zoom);
+                
+                vec2 z = vec2(0.0);
+                float iter = 0.0;
+                const float maxIter = 200.0;
+                
+                for(float i=0.0; i<maxIter; i++) {
+                    // z = z^2 + c
+                    float x = (z.x * z.x - z.y * z.y) + c.x;
+                    float y = (2.0 * z.x * z.y) + c.y;
+                    z = vec2(x, y);
+                    
+                    if(dot(z, z) > 4.0) {
+                        iter = i;
+                        break;
+                    }
+                    iter = i;
+                }
+                
+                if(iter == maxIter - 1.0) {
+                    gl_FragColor = vec4(0,0,0,1);
+                } else {
+                    float t = iter / maxIter;
+                    vec3 col = vec3(t*2.0, t*0.5, 0.5+t*0.5);
+                    gl_FragColor = vec4(col, 1.0);
+                }
+            }
+        `;
+
+        function createShader(gl, type, source) {
+            const s = gl.createShader(type);
+            gl.shaderSource(s, source); gl.compileShader(s);
+            if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.log(gl.getShaderInfoLog(s));
+            return s;
+        }
+
+        const prog = gl.createProgram();
+        gl.attachShader(prog, createShader(gl, gl.VERTEX_SHADER, vs));
+        gl.attachShader(prog, createShader(gl, gl.FRAGMENT_SHADER, fs));
+        gl.linkProgram(prog);
+        gl.useProgram(prog);
+
+        const buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+
+        const posLoc = gl.getAttribLocation(prog, 'position');
+        gl.enableVertexAttribArray(posLoc);
+        gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+        let center = { x: -0.5, y: 0.0 };
+        let zoom = 1.0;
+        let targetZoom = 1.0;
+
+        function draw() {
+            zoom += (targetZoom - zoom) * 0.1;
+
+            gl.uniform2f(gl.getUniformLocation(prog, 'resolution'), canvas.width, canvas.height);
+            gl.uniform2f(gl.getUniformLocation(prog, 'center'), center.x, center.y);
+            gl.uniform1f(gl.getUniformLocation(prog, 'zoom'), zoom);
+
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+            requestAnimationFrame(draw);
+        }
+
+        draw();
+
+        window.addEventListener('wheel', e => {
+            e.preventDefault();
+            if (e.deltaY < 0) targetZoom *= 1.1;
+            else targetZoom *= 0.9;
+        }, { passive: false });
+
+        window.addEventListener('mousedown', e => {
+            let uvX = (e.clientX - canvas.width / 2) / canvas.height;
+            let uvY = (canvas.height - e.clientY - canvas.height / 2) / canvas.height; // Flip Y for GL
+
+            // Convert to World
+            center.x += uvX * (3.0 / zoom);
+            center.y += uvY * (3.0 / zoom); // Oops, direction might be wrong.
+            // Visual adjustment only.
+        });
+    </script>
+</body>
+
+</html>

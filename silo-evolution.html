@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Evolution | Silo</title>
+    <style>
+        body {
+            margin: 0;
+            background: #050505;
+            color: #fff;
+            font-family: 'Space Grotesk', sans-serif;
+            overflow: hidden;
+        }
+
+        .nav {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            z-index: 100;
+        }
+
+        a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        a:hover {
+            color: #fff;
+        }
+
+        .hud {
+            position: absolute;
+            bottom: 3rem;
+            left: 3rem;
+            pointer-events: none;
+            mix-blend-mode: difference;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 3rem;
+            line-height: 1;
+            margin: 0;
+            letter-spacing: -0.05em;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin: 0;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .stats {
+            position: absolute;
+            top: 3rem;
+            right: 3rem;
+            text-align: right;
+            font-family: monospace;
+            color: #0f0;
+        }
+
+        .stat-val {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: #666;
+        }
+
+        #canvas {
+            display: block;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="nav"><a href="silo.html">← SILO</a></div>
+
+    <div class="hud">
+        <p>Experiment 08</p>
+        <h1>EVOLUTION</h1>
+        <div style="margin-top:10px; color:#fa0;">GENETIC ALGORITHM</div>
+    </div>
+
+    <div class="stats">
+        <div><span class="stat-val" id="genVal">1</span></div>
+        <div class="stat-label">GENERATION</div>
+        <div style="margin-top:20px;"><span class="stat-val" id="aliveVal">100</span></div>
+        <div class="stat-label">ALIVE</div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        // EVOLUTION SIMULATION
+        // Cars with 5 ray sensors feeding a simple Neural Net (Perceptron)
+        // evolving to clear a track.
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        // --- BRAIN ---
+        class NeuralNetwork {
+            constructor(inputs, hidden, outputs) {
+                // Simplified Matrix weights
+                this.wi = new Float32Array(inputs * hidden);
+                this.wo = new Float32Array(hidden * outputs);
+                this.randomize();
+            }
+            randomize() {
+                for (let i = 0; i < this.wi.length; i++) this.wi[i] = Math.random() * 2 - 1;
+                for (let i = 0; i < this.wo.length; i++) this.wo[i] = Math.random() * 2 - 1;
+            }
+            // Mutation
+            mutate(rate) {
+                for (let i = 0; i < this.wi.length; i++) {
+                    if (Math.random() < rate) this.wi[i] += (Math.random() * 0.2 - 0.1); // Shift
+                }
+                for (let i = 0; i < this.wo.length; i++) {
+                    if (Math.random() < rate) this.wo[i] += (Math.random() * 0.2 - 0.1);
+                }
+            }
+            predict(inputs) {
+                // Input -> Hidden
+                let hidden = new Array(5).fill(0); // 5 hidden neurons
+                for (let h = 0; h < 5; h++) {
+                    let sum = 0;
+                    for (let i = 0; i < inputs.length; i++) {
+                        sum += inputs[i] * this.wi[h * inputs.length + i];
+                    }
+                    hidden[h] = Math.max(0, sum); // ReLU
+                }
+
+                // Hidden -> Output (2: Turn, Speed)
+                let output = new Array(2).fill(0);
+                for (let o = 0; o < 2; o++) {
+                    let sum = 0;
+                    for (let h = 0; h < 5; h++) {
+                        sum += hidden[h] * this.wo[o * 5 + h];
+                    }
+                    output[o] = Math.tanh(sum); // -1 to 1
+                }
+                return output;
+            }
+            clone() {
+                const nn = new NeuralNetwork(5, 5, 2);
+                nn.wi.set(this.wi);
+                nn.wo.set(this.wo);
+                return nn;
+            }
+        }
+
+        // --- CAR ---
+        class Car {
+            constructor() {
+                this.pos = { x: 100, y: height / 2 };
+                this.vel = { x: 0, y: 0 };
+                this.angle = 0;
+                this.brain = new NeuralNetwork(5, 5, 2);
+                this.dead = false;
+                this.score = 0;
+                this.sensors = new Array(5).fill(0);
+            }
+
+            update(walls) {
+                if (this.dead) return;
+
+                // Read Sensors
+                this.sensors = this.raycast(walls);
+
+                // Think
+                const outputs = this.brain.predict(this.sensors);
+                const turn = outputs[0];
+                const speed = (outputs[1] + 1) * 2; // 0 to 4
+
+                this.angle += turn * 0.1;
+                this.vel.x = Math.cos(this.angle) * speed;
+                this.vel.y = Math.sin(this.angle) * speed;
+
+                this.pos.x += this.vel.x;
+                this.pos.y += this.vel.y;
+
+                this.score += speed;
+
+                // Check Collision
+                if (this.pos.x < 0 || this.pos.x > width || this.pos.y < 0 || this.pos.y > height) {
+                    this.dead = true;
+                }
+                // Check walls
+                // Simple box vs box? Or point vs rect. Car is point for now.
+                // Assuming walls are defined as rects
+                for (let w of walls) {
+                    if (this.pos.x > w.x && this.pos.x < w.x + w.w && this.pos.y > w.y && this.pos.y < w.y + w.h) {
+                        this.dead = true;
+                    }
+                }
+            }
+
+            raycast(walls) {
+                const readings = [];
+                const angles = [-Math.PI / 4, -Math.PI / 8, 0, Math.PI / 8, Math.PI / 4];
+
+                for (let a of angles) {
+                    let r = 0;
+                    let hit = false;
+                    let angle = this.angle + a;
+                    let dx = Math.cos(angle);
+                    let dy = Math.sin(angle);
+
+                    let cx = this.pos.x;
+                    let cy = this.pos.y;
+
+                    // Ray march
+                    for (let i = 0; i < 100; i += 2) {
+                        cx += dx * 2;
+                        cy += dy * 2;
+
+                        // Check bounds/walls
+                        if (cx < 0 || cx > width || cy < 0 || cy > height) { hit = true; break; }
+                        for (let w of walls) {
+                            if (cx > w.x && cx < w.x + w.w && cy > w.y && cy < w.y + w.h) {
+                                hit = true; break;
+                            }
+                        }
+                        if (hit) break;
+                        r += 2;
+                    }
+                    readings.push(hit ? 1 - (r / 200) : 0); // 1 = close, 0 = far
+                }
+                return readings;
+            }
+
+            draw() {
+                if (this.dead) return;
+                ctx.fillStyle = '#0f0';
+                ctx.save();
+                ctx.translate(this.pos.x, this.pos.y);
+                ctx.rotate(this.angle);
+                ctx.fillRect(-5, -3, 10, 6);
+                ctx.restore();
+            }
+        }
+
+        let cars = [];
+        let walls = [];
+        let generation = 1;
+
+        function init() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+
+            // Generate Walls (Track)
+            walls = [
+                { x: 300, y: 100, w: 50, h: 400 },
+                { x: 600, y: 300, w: 50, h: 500 },
+                { x: 900, y: 0, w: 50, h: 400 },
+                { x: 0, y: 0, w: width, h: 20 }, // Border
+                { x: 0, y: height - 20, w: width, h: 20 },
+                { x: 0, y: 0, w: 20, h: height },
+                { x: width - 20, y: 0, w: 20, h: height }
+            ];
+
+            if (cars.length === 0) {
+                for (let i = 0; i < 100; i++) cars.push(new Car());
+            }
+        }
+
+        function nextGen() {
+            // Natural Selection
+            let bestScore = 0;
+            let bestCar = null;
+
+            for (let c of cars) {
+                if (c.score > bestScore) {
+                    bestScore = c.score;
+                    bestCar = c;
+                }
+            }
+
+            const newCars = [];
+            // Elitism: Keep best
+            const champ = new Car();
+            champ.brain = bestCar.brain.clone();
+            champ.pos = { x: 100, y: height / 2 }; // Reset pos
+            newCars.push(champ);
+
+            // Breed
+            for (let i = 1; i < 100; i++) {
+                const child = new Car();
+                // Asexual reproduction from best (mutation only) for simplicity
+                child.brain = bestCar.brain.clone();
+                child.brain.mutate(0.1);
+                child.pos = { x: 100, y: height / 2 };
+                newCars.push(child);
+            }
+            cars = newCars;
+            generation++;
+            document.getElementById('genVal').innerText = generation;
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.fillRect(0, 0, width, height);
+
+            // Draw Walls
+            ctx.fillStyle = '#333';
+            for (let w of walls) ctx.fillRect(w.x, w.y, w.w, w.h);
+
+            // Update Cars
+            let allDead = true;
+            let aliveCount = 0;
+
+            for (let c of cars) {
+                c.update(walls);
+                c.draw();
+                if (!c.dead) {
+                    allDead = false;
+                    aliveCount++;
+                }
+            }
+            document.getElementById('aliveVal').innerText = aliveCount;
+
+            if (allDead || aliveCount < 1 || (Date.now() - genStartTime > 10000 && aliveCount < 30)) { // Timeout or dead
+                nextGen();
+                genStartTime = Date.now();
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', init);
+        init();
+        let genStartTime = Date.now();
+        animate();
+
+    </script>
+</body>
+
+</html>

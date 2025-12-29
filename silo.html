@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Silo | An Empty Ship</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        /* Modern Reset */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background-color: #050505;
+            color: #e0e0e0;
+            font-family: 'Space Grotesk', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Typography */
+        h1,
+        h2,
+        h3 {
+            margin: 0;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Layout */
+        .site-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, rgba(5, 5, 5, 0.9), transparent);
+            backdrop-filter: blur(5px);
+        }
+
+        .site-title {
+            font-weight: 700;
+            color: #fff;
+            font-size: 1.2rem;
+        }
+
+        .site-nav {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .site-nav a {
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 500;
+            transition: color 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .site-nav a:hover,
+        .site-nav a.active {
+            color: #fff;
+        }
+
+        /* Silo Grid */
+        .silo-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 8rem 2rem 4rem;
+        }
+
+        .silo-header {
+            margin-bottom: 4rem;
+            border-bottom: 1px solid #222;
+            padding-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .silo-title {
+            font-size: 4rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1;
+        }
+
+        .silo-desc {
+            max-width: 400px;
+            font-size: 0.9rem;
+            color: #888;
+            text-align: right;
+        }
+
+        /* Categories */
+        .category-section {
+            margin-bottom: 6rem;
+        }
+
+        .category-title {
+            font-size: 1.2rem;
+            color: #fff;
+            border-left: 2px solid #fff;
+            padding-left: 1rem;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            opacity: 0.8;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        /* Card */
+        .card {
+            background: #0a0a0a;
+            border: 1px solid #222;
+            aspect-ratio: 4/5;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s, border-color 0.3s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 1.5rem;
+        }
+
+        .card:hover {
+            border-color: #555;
+            transform: translateY(-5px);
+        }
+
+        .card-number {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 3rem;
+            font-weight: 700;
+            color: #151515;
+            transition: color 0.3s;
+        }
+
+        .card:hover .card-number {
+            color: #222;
+        }
+
+        .card-content {
+            z-index: 2;
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .card p {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.4;
+            margin-bottom: 1rem;
+        }
+
+        .tech-tag {
+            display: inline-block;
+            font-size: 0.7rem;
+            color: #00ffaa;
+            border: 1px solid rgba(0, 255, 170, 0.2);
+            padding: 2px 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .coming-soon {
+            opacity: 0.3;
+            pointer-events: none;
+            border-style: dashed;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <header class="site-header">
+        <a class="site-title" href="index.html">Hanbin Bae</a>
+        <nav class="site-nav">
+            <a href="index.html">Home</a>
+            <a href="portfolio.html">Portfolio</a>
+            <a href="silo.html" class="active">Silo</a>
+        </nav>
+    </header>
+
+    <div class="silo-container">
+        <header class="silo-header">
+            <h1 class="silo-title">SILO</h1>
+            <div class="silo-desc">
+                Interactive experiments visualizing complex concepts in Physics, AI, and Mathematics.
+            </div>
+        </header>
+
+        <!-- PHYSICS & CHAOS -->
+        <section class="category-section">
+            <h2 class="category-title">Physics & Chaos</h2>
+            <div class="grid">
+                <!-- 01. Quantum -->
+                <a href="master-doubleslit.html" class="card">
+                    <div class="card-number">01</div>
+                    <div class="card-content">
+                        <h3>Quantum</h3>
+                        <p>Observer effect and wave function collapse visualization.</p>
+                        <span class="tech-tag">Optics</span>
+                    </div>
+                </a>
+
+                <!-- 02. Chaos -->
+                <a href="silo-chaos.html" class="card">
+                    <div class="card-number">02</div>
+                    <div class="card-content">
+                        <h3>Chaos</h3>
+                        <p>Double pendulum simulation demonstrating the Butterfly Effect.</p>
+                        <span class="tech-tag">Mechanics</span>
+                    </div>
+                </a>
+
+                <!-- 03. Gravity -->
+                <a href="silo-gravity.html" class="card">
+                    <div class="card-number">03</div>
+                    <div class="card-content">
+                        <h3>Gravity</h3>
+                        <p>N-Body orbital mechanics sandbox.</p>
+                        <span class="tech-tag">Sim</span>
+                    </div>
+                </a>
+
+                <!-- 10. Optics -->
+                <a href="silo-optics.html" class="card">
+                    <div class="card-number">10</div>
+                    <div class="card-content">
+                        <h3>Optics</h3>
+                        <p>Raytracing & Refraction.</p>
+                        <span class="tech-tag">Sim</span>
+                    </div>
+                </a>
+
+                <!-- 11. Springs -->
+                <a href="silo-springs.html" class="card">
+                    <div class="card-number">11</div>
+                    <div class="card-content">
+                        <h3>Springs</h3>
+                        <p>Soft Body Mass-Spring System.</p>
+                        <span class="tech-tag">Physics</span>
+                    </div>
+                </a>
+
+                <!-- 12. Relativity -->
+                <a href="silo-relativity.html" class="card">
+                    <div class="card-number">12</div>
+                    <div class="card-content">
+                        <h3>Relativity</h3>
+                        <p>Spacetime Distortion & Gravity Well.</p>
+                        <span class="tech-tag">Cosmos</span>
+                    </div>
+                </a>
+
+                <!-- 13. Special Relativity -->
+                <a href="silo-special-relativity.html" class="card">
+                    <div class="card-number">13</div>
+                    <div class="card-content">
+                        <h3>Special Relativity</h3>
+                        <p>Length contraction & time dilation demo.</p>
+                        <span class="tech-tag">Physics</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- AI & NEURAL -->
+        <section class="category-section">
+            <h2 class="category-title">AI & Deep Learning</h2>
+            <div class="grid">
+                <!-- 04. Neural -->
+                <a href="silo-neural.html" class="card">
+                    <div class="card-number">04</div>
+                    <div class="card-content">
+                        <h3>Neural</h3>
+                        <p>3D Visualization of CNN processing handwritten digits.</p>
+                        <span class="tech-tag">Vision</span>
+                    </div>
+                </a>
+
+                <!-- 05. Diffusion -->
+                <a href="silo-diffusion.html" class="card">
+                    <div class="card-number">05</div>
+                    <div class="card-content">
+                        <h3>Diffusion</h3>
+                        <p>Reverse diffusion process from noise to image.</p>
+                        <span class="tech-tag">Generative AI</span>
+                    </div>
+                </a>
+
+                <!-- 06. Evolution -->
+                <a href="silo-evolution.html" class="card">
+                    <div class="card-number">06</div>
+                    <div class="card-content">
+                        <h3>Evolution</h3>
+                        <p>Genetic Algorithm training cars to drive.</p>
+                        <span class="tech-tag">Sim</span>
+                    </div>
+                </a>
+
+                <!-- 13. Life -->
+                <a href="silo-life.html" class="card">
+                    <div class="card-number">13</div>
+                    <div class="card-content">
+                        <h3>Life</h3>
+                        <p>Conway's Game of Life (GPU).</p>
+                        <span class="tech-tag">Automata</span>
+                    </div>
+                </a>
+
+                <!-- 14. Swarm -->
+                <a href="silo-swarm.html" class="card">
+                    <div class="card-number">14</div>
+                    <div class="card-content">
+                        <h3>Swarm</h3>
+                        <p>Boids Flocking Simulation.</p>
+                        <span class="tech-tag">Emergence</span>
+                    </div>
+                </a>
+
+                <!-- 15. Reaction -->
+                <a href="silo-reaction.html" class="card">
+                    <div class="card-number">15</div>
+                    <div class="card-content">
+                        <h3>Reaction</h3>
+                        <p>Gray-Scott Reaction Diffusion.</p>
+                        <span class="tech-tag">Bio</span>
+                    </div>
+                </a>
+
+                <!-- 19. Black Hole Lensing -->
+                <a href="silo-blackhole.html" class="card">
+                    <div class="card-number">19</div>
+                    <div class="card-content">
+                        <h3>Black Hole Lensing</h3>
+                        <p>Gravitational lensing simulation.</p>
+                        <span class="tech-tag">Physics</span>
+                    </div>
+                </a>
+
+                <!-- 20. Convolution -->
+                <a href="silo-convolution.html" class="card">
+                    <div class="card-number">20</div>
+                    <div class="card-content">
+                        <h3>Convolution</h3>
+                        <p>Interactive convolution kernel visualizer.</p>
+                        <span class="tech-tag">Math</span>
+                    </div>
+                </a>
+
+                <!-- 21. MuJoCo -->
+                <a href="silo-mujoco.html" class="card">
+                    <div class="card-number">21</div>
+                    <div class="card-content">
+                        <h3>MuJoCo</h3>
+                        <p>Web-based physics simulation.</p>
+                        <span class="tech-tag">Physics</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- MATH & ALGORITHMS -->
+        <section class="category-section">
+            <h2 class="category-title">Math & Algorithms</h2>
+            <div class="grid">
+                <!-- 07. Fourier 1D -->
+                <a href="silo-fft.html" class="card">
+                    <div class="card-number">07</div>
+                    <div class="card-content">
+                        <h3>Fourier 1D</h3>
+                        <p>Discrete Fourier Transform visualization (Epicycles).</p>
+                        <span class="tech-tag">Signal</span>
+                    </div>
+                </a>
+
+                <!-- 08. Fourier 2D -->
+                <a href="silo-fft2d.html" class="card">
+                    <div class="card-number">08</div>
+                    <div class="card-content">
+                        <h3>Fourier 2D</h3>
+                        <p>Image Magnitude Spectrum & Inverse.</p>
+                        <span class="tech-tag">Image Proc</span>
+                    </div>
+                </a>
+
+                <!-- 09. Fluid -->
+                <a href="silo-fluid.html" class="card">
+                    <div class="card-number">09</div>
+                    <div class="card-content">
+                        <h3>Fluid</h3>
+                        <p>Interactive Navier-Stokes Fluid Solver.</p>
+                        <span class="tech-tag">Physics</span>
+                    </div>
+                </a>
+
+                <!-- 16. Fractal -->
+                <a href="silo-fractal.html" class="card">
+                    <div class="card-number">16</div>
+                    <div class="card-content">
+                        <h3>Fractal</h3>
+                        <p>Mandelbrot Set Zoomer.</p>
+                        <span class="tech-tag">Chaos</span>
+                    </div>
+                </a>
+
+                <!-- 17. Sort -->
+                <a href="silo-sort.html" class="card">
+                    <div class="card-number">17</div>
+                    <div class="card-content">
+                        <h3>Sort</h3>
+                        <p>Sorting Algorithms Visualization.</p>
+                        <span class="tech-tag">Algo</span>
+                    </div>
+                </a>
+
+                <!-- 18. Topology -->
+                <a href="silo-topology.html" class="card">
+                    <div class="card-number">18</div>
+                    <div class="card-content">
+                        <h3>Topology</h3>
+                        <p>Lorenz Attractor (Strange Attractor).</p>
+                        <span class="tech-tag">Chaos</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+    </div>
+</body>
+
+</html>

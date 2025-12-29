@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>FFT 2D | Silo</title>
+    <style>
+        body {
+            margin: 0;
+            background: #050505;
+            color: #fff;
+            font-family: 'Space Grotesk', sans-serif;
+            overflow: hidden;
+        }
+
+        .nav {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            z-index: 100;
+        }
+
+        a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        a:hover {
+            color: #fff;
+        }
+
+        .hud {
+            position: absolute;
+            bottom: 3rem;
+            left: 3rem;
+            pointer-events: none;
+            mix-blend-mode: difference;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 3rem;
+            line-height: 1;
+            margin: 0;
+            letter-spacing: -0.05em;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin: 0;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            justify-content: center;
+            align-items: center;
+            gap: 50px;
+        }
+
+        .panel {
+            text-align: center;
+            position: relative;
+        }
+
+        canvas {
+            border: 1px solid #333;
+            background: #000;
+            image-rendering: pixelated;
+            cursor: crosshair;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            display: block;
+        }
+
+        .label {
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: #666;
+            letter-spacing: 2px;
+        }
+
+        .scan-line {
+            position: absolute;
+            background: #0f0;
+            box-shadow: 0 0 10px #0f0;
+            pointer-events: none;
+            display: none;
+        }
+
+        .scan-h {
+            left: 0;
+            width: 100%;
+            height: 2px;
+        }
+
+        .scan-v {
+            top: 0;
+            height: 100%;
+            width: 2px;
+        }
+
+        button {
+            position: absolute;
+            bottom: 3rem;
+            right: 3rem;
+            background: transparent;
+            border: 1px solid #fff;
+            color: #fff;
+            padding: 1rem 2rem;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        button:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        .status-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #0f0;
+            font-size: 1.5rem;
+            text-shadow: 0 0 10px #000;
+            display: none;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="nav"><a href="silo.html">← SILO</a></div>
+
+    <div class="hud">
+        <p>Experiment 07</p>
+        <h1>SPECTRAL</h1>
+        <div style="margin-top:10px; color:#50f;">2D FAST FOURIER TRANSFORM</div>
+    </div>
+
+    <div class="container">
+        <div class="panel">
+            <canvas id="spatialCanvas" width="128" height="128" style="width:400px; height:400px;"></canvas>
+            <div class="scan-line scan-h" id="scanH"></div>
+            <div class="scan-line scan-v" id="scanV"></div>
+            <div class="label">SPATIAL / INTERMEDIATE</div>
+        </div>
+
+        <div style="font-size: 2rem; color: #333;">&harr;</div>
+
+        <div class="panel">
+            <canvas id="freqCanvas" width="128" height="128" style="width:400px; height:400px;"></canvas>
+            <div class="label">FREQUENCY DOMAIN</div>
+            <div class="status-text" id="statusText">PROCESSING ROWS...</div>
+        </div>
+    </div>
+
+    <button id="animBtn" style="right: 3rem;">FORWARD FFT &rarr;</button>
+    <button id="invBtn" style="right: 20rem;">&larr; INVERSE FFT</button>
+
+    <script>
+        // 2D FFT VISUALIZATION
+        // Cooley-Tukey Radix-2
+
+        const SIZE = 128;
+        const spatialCanvas = document.getElementById('spatialCanvas');
+        const freqCanvas = document.getElementById('freqCanvas');
+        const ctxS = spatialCanvas.getContext('2d');
+        const ctxF = freqCanvas.getContext('2d');
+
+        // Data buffers
+        let re = new Float32Array(SIZE * SIZE);
+        let im = new Float32Array(SIZE * SIZE);
+        // Backup to restore original drawing for comparison or safety
+        let backupRe = new Float32Array(SIZE * SIZE);
+
+        // --- FFT Core ---
+        function fft_recursive(n, inputRe, inputIm, inverse = false) {
+            if (n === 1) return { re: inputRe, im: inputIm };
+            const half = n / 2;
+            const evenRe = new Float32Array(half);
+            const evenIm = new Float32Array(half);
+            const oddRe = new Float32Array(half);
+            const oddIm = new Float32Array(half);
+            for (let i = 0; i < half; i++) {
+                evenRe[i] = inputRe[2 * i]; evenIm[i] = inputIm[2 * i];
+                oddRe[i] = inputRe[2 * i + 1]; oddIm[i] = inputIm[2 * i + 1];
+            }
+            const e = fft_recursive(half, evenRe, evenIm, inverse);
+            const o = fft_recursive(half, oddRe, oddIm, inverse);
+            const outRe = new Float32Array(n);
+            const outIm = new Float32Array(n);
+            for (let k = 0; k < half; k++) {
+                // IFFT: Angle is positive
+                const angle = (inverse ? 2 : -2) * Math.PI * k / n;
+                const wRe = Math.cos(angle); const wIm = Math.sin(angle);
+                const tRe = wRe * o.re[k] - wIm * o.im[k];
+                const tIm = wIm * o.re[k] + wRe * o.im[k];
+                outRe[k] = e.re[k] + tRe; outIm[k] = e.im[k] + tIm;
+                outRe[k + half] = e.re[k] - tRe; outIm[k + half] = e.im[k] - tIm;
+            }
+            return { re: outRe, im: outIm };
+        }
+
+        // --- Drawing ---
+        ctxS.fillStyle = 'black'; ctxS.fillRect(0, 0, SIZE, SIZE);
+
+        let isDrawing = false;
+        function getPos(e) {
+            const rect = spatialCanvas.getBoundingClientRect();
+            return { x: Math.floor((e.clientX - rect.left) / rect.width * SIZE), y: Math.floor((e.clientY - rect.top) / rect.height * SIZE) };
+        }
+        spatialCanvas.addEventListener('mousedown', e => { if (!animating) { isDrawing = true; draw(e); } });
+        window.addEventListener('mouseup', () => { if (isDrawing) { isDrawing = false; runInstantFFT(); } });
+        spatialCanvas.addEventListener('mousemove', draw);
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const pos = getPos(e);
+            ctxS.fillStyle = 'white';
+            ctxS.beginPath();
+            ctxS.arc(pos.x, pos.y, 2, 0, Math.PI * 2);
+            ctxS.fill();
+        }
+
+        // --- Visualization Logic ---
+        function readImage() {
+            const imgData = ctxS.getImageData(0, 0, SIZE, SIZE).data;
+            for (let i = 0; i < SIZE * SIZE; i++) {
+                re[i] = imgData[i * 4] / 255.0;
+                im[i] = 0;
+            }
+        }
+
+        function renderStateTo(ctx, isFreq) {
+            const img = ctx.createImageData(SIZE, SIZE);
+            let maxMag = 0;
+            const mags = new Float32Array(SIZE * SIZE);
+            const shift = isFreq;
+            const half = SIZE / 2;
+
+            for (let y = 0; y < SIZE; y++) {
+                for (let x = 0; x < SIZE; x++) {
+                    let idx = y * SIZE + x;
+                    if (shift) {
+                        let sy = (y + half) % SIZE;
+                        let sx = (x + half) % SIZE;
+                        idx = sy * SIZE + sx;
+                    }
+
+                    const mag = Math.sqrt(re[idx] * re[idx] + im[idx] * im[idx]);
+                    mags[y * SIZE + x] = isFreq ? Math.log(1 + mag) : mag; // Spatial uses Raw Mag (which effectively is Real part if phase 0)
+                    if (mags[y * SIZE + x] > maxMag) maxMag = mags[y * SIZE + x];
+                }
+            }
+
+            for (let i = 0; i < SIZE * SIZE; i++) {
+                let val = (mags[i] / (maxMag || 1)) * 255;
+                if (isFreq) {
+                    img.data[i * 4] = val;
+                    img.data[i * 4 + 1] = val * 0.5;
+                    img.data[i * 4 + 2] = val * 0.2 + 50;
+                } else {
+                    // Spatial: Greyscale
+                    img.data[i * 4] = val;
+                    img.data[i * 4 + 1] = val;
+                    img.data[i * 4 + 2] = val;
+                }
+                img.data[i * 4 + 3] = 255;
+            }
+            ctx.putImageData(img, 0, 0);
+        }
+
+        function runInstantFFT() {
+            readImage();
+            // Rows
+            for (let y = 0; y < SIZE; y++) {
+                const rRe = new Float32Array(SIZE), rIm = new Float32Array(SIZE);
+                for (let x = 0; x < SIZE; x++) { rRe[x] = re[y * SIZE + x]; rIm[x] = im[y * SIZE + x]; }
+                const res = fft_recursive(SIZE, rRe, rIm, false);
+                for (let x = 0; x < SIZE; x++) { re[y * SIZE + x] = res.re[x]; im[y * SIZE + x] = res.im[x]; }
+            }
+            // Cols
+            for (let x = 0; x < SIZE; x++) {
+                const cRe = new Float32Array(SIZE), cIm = new Float32Array(SIZE);
+                for (let y = 0; y < SIZE; y++) { cRe[y] = re[y * SIZE + x]; cIm[y] = im[y * SIZE + x]; }
+                const res = fft_recursive(SIZE, cRe, cIm, false);
+                for (let y = 0; y < SIZE; y++) { re[y * SIZE + x] = res.re[y]; im[y * SIZE + x] = res.im[y]; }
+            }
+            renderStateTo(ctxF, true);
+        }
+
+        // --- PROCESS ANIMATION ---
+
+        let animating = false;
+        let animRow = 0;
+        let animCol = 0;
+        let animPhase = 0; // 0: Rows, 1: Cols
+        let isInverse = false;
+
+        function startAnimation(inverse) {
+            if (animating) return;
+            animating = true;
+            isInverse = inverse;
+
+            if (!inverse) {
+                // Forward
+                readImage();
+                ctxF.fillStyle = '#000'; ctxF.fillRect(0, 0, SIZE, SIZE);
+                animPhase = 0; animRow = 0; animCol = 0;
+                document.getElementById('statusText').innerText = "FFT PHASE 1: ROW TRANSFORMS";
+                document.getElementById('scanH').style.display = 'block';
+                document.getElementById('scanV').style.display = 'none';
+            } else {
+                // Inverse
+                // Start from current Freq state (re/im should be populated from Spectrum)
+                // But wait, re/im IS populated from instant FFT if we drew last.
+                // Assuming re/im holds the Frequency Data right now.
+
+                // Clear Spatial
+                ctxS.fillStyle = '#000'; ctxS.fillRect(0, 0, SIZE, SIZE);
+
+                // Inverse Order: Cols then Rows usually? Or Rows then Cols?
+                // Order doesn't matter for logic, but usually we reverse.
+                // Let's do Cols then Rows to match "Unwinding".
+
+                animPhase = 10; // 10 = Inv Cols, 11 = Inv Rows
+                animRow = 0; animCol = 0;
+
+                document.getElementById('statusText').style.display = 'block'; // Show on Freq Canvas? Or Spatial?
+                // Let's put status on hud
+                document.getElementById('statusText').innerText = "IFFT PHASE 1: COLUMN RECONSTRUCTION";
+
+                // Reuse scanlines? They are positioned relative to container.
+                // We need scanlines on Freq canvas first.
+                document.getElementById('scanH').style.display = 'none';
+                document.getElementById('scanV').style.display = 'block';
+            }
+
+            document.getElementById('statusText').style.display = 'block';
+            animateStep();
+        }
+
+        document.getElementById('animBtn').addEventListener('click', () => startAnimation(false));
+        document.getElementById('invBtn').addEventListener('click', () => startAnimation(true));
+
+        function animateStep() {
+            if (!animating) return;
+            const SPEEED = 4;
+
+            // --- FORWARD ---
+            if (animPhase === 0) { // Forward Rows
+                for (let k = 0; k < SPEEED; k++) {
+                    if (animRow >= SIZE) break;
+                    const y = animRow;
+                    const rRe = new Float32Array(SIZE), rIm = new Float32Array(SIZE);
+                    for (let x = 0; x < SIZE; x++) { rRe[x] = re[y * SIZE + x]; rIm[x] = im[y * SIZE + x]; }
+                    const res = fft_recursive(SIZE, rRe, rIm, false);
+                    for (let x = 0; x < SIZE; x++) { re[y * SIZE + x] = res.re[x]; im[y * SIZE + x] = res.im[x]; }
+                    animRow++;
+                }
+                renderStateTo(ctxS, false);
+                const pct = (animRow / SIZE) * 100;
+                document.getElementById('scanH').style.top = pct + '%'; // On Spatial
+
+                if (animRow >= SIZE) {
+                    animPhase = 1;
+                    document.getElementById('statusText').innerText = "FFT PHASE 2: COLUMN TRANSFORMS";
+                    document.getElementById('scanH').style.display = 'none';
+                    document.getElementById('scanV').style.display = 'block';
+                }
+                requestAnimationFrame(animateStep);
+            }
+            else if (animPhase === 1) { // Forward Cols
+                for (let k = 0; k < SPEEED; k++) {
+                    if (animCol >= SIZE) break;
+                    const x = animCol;
+                    const cRe = new Float32Array(SIZE), cIm = new Float32Array(SIZE);
+                    for (let y = 0; y < SIZE; y++) { cRe[y] = re[y * SIZE + x]; cIm[y] = im[y * SIZE + x]; }
+                    const res = fft_recursive(SIZE, cRe, cIm, false);
+                    for (let y = 0; y < SIZE; y++) { re[y * SIZE + x] = res.re[y]; im[y * SIZE + x] = res.im[y]; }
+                    animCol++;
+                }
+                renderStateTo(ctxF, true);
+                const pct = (animCol / SIZE) * 100;
+                document.getElementById('scanV').style.left = pct + '%'; // On Freq
+
+                if (animCol >= SIZE) {
+                    animating = false;
+                    document.getElementById('statusText').style.display = 'none';
+                    document.getElementById('scanV').style.display = 'none';
+                    renderStateTo(ctxF, true);
+                } else {
+                    requestAnimationFrame(animateStep);
+                }
+            }
+
+            // --- INVERSE ---
+            else if (animPhase === 10) { // Inverse Cols
+                for (let k = 0; k < SPEEED; k++) {
+                    if (animCol >= SIZE) break;
+                    const x = animCol;
+                    const cRe = new Float32Array(SIZE), cIm = new Float32Array(SIZE);
+                    for (let y = 0; y < SIZE; y++) { cRe[y] = re[y * SIZE + x]; cIm[y] = im[y * SIZE + x]; }
+                    const res = fft_recursive(SIZE, cRe, cIm, true); // INVERSE
+                    // Normalize by N? Usually IFFT does /N at some point. CooleyTukey usually 1/N.
+                    // Let's divide by SIZE
+                    for (let y = 0; y < SIZE; y++) {
+                        re[y * SIZE + x] = res.re[y] / SIZE;
+                        im[y * SIZE + x] = res.im[y] / SIZE;
+                    }
+                    animCol++;
+                }
+
+                // Visualization: Update Freq Canvas to show "Unwinding"?
+                // Or update Spatial Canvas?
+                // The intermediate state after Col Inv is "Row Frequency".
+                // We should visualize this on the Spatial Canvas (or Freq Canvas).
+                // Let's visualize on Freq Canvas transitioning back.
+                renderStateTo(ctxF, true); // It looks weird but shows activity
+
+                const pct = (animCol / SIZE) * 100;
+                document.getElementById('scanV').style.left = pct + '%';
+
+                if (animCol >= SIZE) {
+                    animPhase = 11;
+                    document.getElementById('statusText').innerText = "IFFT PHASE 2: ROW RECONSTRUCTION";
+                    document.getElementById('scanV').style.display = 'none';
+                    document.getElementById('scanH').style.display = 'block';
+                }
+                requestAnimationFrame(animateStep);
+            }
+            else if (animPhase === 11) { // Inverse Rows
+                for (let k = 0; k < SPEEED; k++) {
+                    if (animRow >= SIZE) break;
+                    const y = animRow;
+                    const rRe = new Float32Array(SIZE), rIm = new Float32Array(SIZE);
+                    for (let x = 0; x < SIZE; x++) { rRe[x] = re[y * SIZE + x]; rIm[x] = im[y * SIZE + x]; }
+                    const res = fft_recursive(SIZE, rRe, rIm, true);
+                    for (let x = 0; x < SIZE; x++) {
+                        re[y * SIZE + x] = res.re[x] / SIZE;
+                        im[y * SIZE + x] = res.im[x] / SIZE;
+                    }
+                    animRow++;
+                }
+                renderStateTo(ctxS, false);
+                const pct = (animRow / SIZE) * 100;
+                document.getElementById('scanH').style.top = pct + '%';
+
+                if (animRow >= SIZE) {
+                    animating = false;
+                    document.getElementById('statusText').style.display = 'none';
+                    document.getElementById('scanH').style.display = 'none';
+                    renderStateTo(ctxS, false); // Final Image
+                } else {
+                    requestAnimationFrame(animateStep);
+                }
+            }
+        }
+
+
+    </script>
+</body>
+
+</html>

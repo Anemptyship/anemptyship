@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Chaos | Silo</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Space Grotesk', sans-serif;
+            user-select: none;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .nav {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            z-index: 100;
+            display: flex;
+            gap: 20px;
+        }
+
+        a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        a:hover {
+            color: #fff;
+        }
+
+        .hud {
+            position: absolute;
+            bottom: 3rem;
+            left: 3rem;
+            color: #fff;
+            pointer-events: none;
+            mix-blend-mode: difference;
+        }
+
+        h1 {
+            font-size: 4rem;
+            line-height: 1;
+            margin: 0;
+            letter-spacing: -0.05em;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 1rem;
+            opacity: 0.7;
+            margin: 0;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 3rem;
+            right: 3rem;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background: transparent;
+            border: 1px solid #333;
+            color: #888;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            border-color: #fff;
+            color: #fff;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="nav">
+        <a href="silo.html">← SILO</a>
+    </div>
+
+    <div class="hud">
+        <p>Experiment 02</p>
+        <h1>CHAOS</h1>
+        <div style="margin-top:10px; color:#ff0055;">SENSITIVITY TO INITIAL CONDITIONS</div>
+    </div>
+
+    <div class="controls">
+        <button id="resetBtn">RESET SIMULATION</button>
+        <button id="trailBtn">TOGGLE TRAILS</button>
+    </div>
+
+    <script>
+        // CHAOS: DOUBLE PENDULUM SWARM
+        // We simulate 100 double pendulums starting with minute differences.
+        // Physics: Lagrangian mechanics
+
+        const canvas = document.createElement('canvas');
+        document.body.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+
+        // Physics Constants
+        const G = 1;
+        const M1 = 10;
+        const M2 = 10;
+        const L1 = 150;
+        const L2 = 150;
+
+        class Pendulum {
+            constructor(offset) {
+                // Initial State
+                // theta = angle, omega = angular velocity
+                // Slight offset in initial angle triggers chaos
+                this.a1 = Math.PI / 2 + offset;
+                this.a2 = Math.PI / 2 + offset;
+                this.v1 = 0;
+                this.v2 = 0;
+
+                // Trail
+                this.history = [];
+                this.color = `hsl(${Math.random() * 60 + 320}, 100%, 50%)`; // Pink/Red/Purple
+                if (offset === 0) this.color = '#fff'; // Reference
+            }
+
+            update() {
+                // Equations of Motion (RK4 or simplified Euler integration)
+                // Using simplified formulas for Double Pendulum
+
+                let num1 = -G * (2 * M1 + M2) * Math.sin(this.a1);
+                let num2 = -M2 * G * Math.sin(this.a1 - 2 * this.a2);
+                let num3 = -2 * Math.sin(this.a1 - this.a2) * M2;
+                let num4 = this.v2 * this.v2 * L2 + this.v1 * this.v1 * L1 * Math.cos(this.a1 - this.a2);
+                let den = L1 * (2 * M1 + M2 - M2 * Math.cos(2 * this.a1 - 2 * this.a2));
+
+                let acc1 = (num1 + num2 + num3 * num4) / den;
+
+                num1 = 2 * Math.sin(this.a1 - this.a2);
+                num2 = (this.v1 * this.v1 * L1 * (M1 + M2));
+                num3 = G * (M1 + M2) * Math.cos(this.a1);
+                num4 = this.v2 * this.v2 * L2 * M2 * Math.cos(this.a1 - this.a2);
+                den = L2 * (2 * M1 + M2 - M2 * Math.cos(2 * this.a1 - 2 * this.a2));
+
+                let acc2 = (num1 * (num2 + num3 + num4)) / den;
+
+                this.v1 += acc1;
+                this.v2 += acc2;
+                this.a1 += this.v1;
+                this.a2 += this.v2;
+
+                // Damping (optional, keeps it stable long term)
+                this.v1 *= 0.999;
+                this.v2 *= 0.999;
+
+                // Calculate Position
+                // Pivot at center
+                let cx = width / 2;
+                let cy = height / 3;
+
+                let x1 = cx + L1 * Math.sin(this.a1);
+                let y1 = cy + L1 * Math.cos(this.a1);
+
+                let x2 = x1 + L2 * Math.sin(this.a2);
+                let y2 = y1 + L2 * Math.cos(this.a2);
+
+                this.pos = { x1, y1, x2, y2 };
+
+                // History
+                this.history.push({ x: x2, y: y2 });
+                if (this.history.length > 200) this.history.shift();
+            }
+
+            draw(ctx, showTrails) {
+                if (!this.pos) return;
+
+                // Draw Arms (only for the first one to avoid mess)
+                // Or maybe faint lines
+                ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+                ctx.beginPath();
+                ctx.moveTo(width / 2, height / 3);
+                ctx.lineTo(this.pos.x1, this.pos.y1);
+                ctx.lineTo(this.pos.x2, this.pos.y2);
+                ctx.stroke();
+
+                if (showTrails) {
+                    ctx.strokeStyle = this.color;
+                    ctx.lineWidth = 2; // thin
+                    ctx.beginPath();
+                    if (this.history.length > 0) ctx.moveTo(this.history[0].x, this.history[0].y);
+                    for (let p of this.history) {
+                        ctx.lineTo(p.x, p.y);
+                    }
+                    ctx.stroke();
+                }
+
+                // Dot
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.pos.x2, this.pos.y2, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        let pendulums = [];
+        let showTrails = true;
+
+        function init() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            reset();
+        }
+
+        function reset() {
+            pendulums = [];
+            // Create 100 pendulums with tiny offsets
+            // .0001 radian difference
+            for (let i = 0; i < 300; i++) {
+                pendulums.push(new Pendulum(i * 0.00001));
+            }
+        }
+
+        function animate() {
+            // Trail effect
+            ctx.fillStyle = 'rgba(0,0,0,0.1)';
+            ctx.fillRect(0, 0, width, height);
+
+            // Composite
+            ctx.globalCompositeOperation = 'screen';
+
+            for (let p of pendulums) {
+                p.update();
+                p.draw(ctx, showTrails);
+            }
+
+            ctx.globalCompositeOperation = 'source-over';
+
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', init);
+        document.getElementById('resetBtn').addEventListener('click', reset);
+        document.getElementById('trailBtn').addEventListener('click', () => {
+            showTrails = !showTrails;
+            // Clear screen
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+        });
+
+        init();
+        animate();
+
+    </script>
+</body>
+
+</html>

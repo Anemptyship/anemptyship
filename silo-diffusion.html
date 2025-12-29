@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Diffusion | Silo</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Space Grotesk', sans-serif;
+            user-select: none;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .nav {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            z-index: 100;
+        }
+
+        a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        a:hover {
+            color: #fff;
+        }
+
+        .hud {
+            position: absolute;
+            bottom: 3rem;
+            left: 3rem;
+            color: #fff;
+            pointer-events: none;
+            mix-blend-mode: difference;
+        }
+
+        h1 {
+            font-size: 4rem;
+            line-height: 1;
+            margin: 0;
+            letter-spacing: -0.05em;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 1rem;
+            opacity: 0.7;
+            margin: 0;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 3rem;
+            right: 3rem;
+            width: 300px;
+        }
+
+        input[type=range] {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        label {
+            color: #888;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .math-box {
+            position: absolute;
+            top: 3rem;
+            right: 3rem;
+            text-align: right;
+            color: #666;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .math-active {
+            color: #0f0;
+            text-shadow: 0 0 5px #0f0;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="nav"><a href="silo.html">← SILO</a></div>
+
+    <div class="hud">
+        <p>Experiment 05</p>
+        <h1>DIFFUSION</h1>
+        <div style="margin-top:10px; color:#0f0;" id="status">SCORE-BASED GENERATIVE MODEL</div>
+    </div>
+
+    <div class="math-box">
+        <div>x<sub>t-1</sub> = x<sub>t</sub> + &alpha;&nabla;log p(x) + &sigma;z</div>
+        <div style="margin-top:5px; font-size:0.7rem;">LANGEVIN DYNAMICS</div>
+    </div>
+
+    <div class="controls">
+        <label>Noise Schedule (Time)</label>
+        <input type="range" min="0" max="100" value="100" id="timeSlider">
+        <button id="toggleBtn"
+            style="margin-top:10px; background:transparent; border:1px solid #555; color:#fff; padding:5px 10px; cursor:pointer;">AUTO
+            DENOISE</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // DIFFUSION: LANGEVIN DYNAMICS
+        // Real-time physics simulation of the reverse diffusion process
+
+        let scene, camera, renderer, particles;
+        let pCount = 30000;
+
+        // Data
+        let targetPositions = new Float32Array(pCount * 3); // Manifold
+        let currentPositions = new Float32Array(pCount * 3); // x_t
+
+        // Settings
+        let timeStep = 1.0; // t: 1.0 (Noise) -> 0.0 (Data)
+        let isAuto = false;
+
+        // Model Constants
+        const NOISE_SCALE_MAX = 5.0; // Sigma max
+        const ALPHA = 0.5; // Step size
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x000000, 0.002);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 0, 90);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); // Trail effect possible
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.autoClearColor = false;
+            document.body.appendChild(renderer.domElement);
+
+            // 1. Generate Target Manifold (The Ship)
+            generateShipTarget();
+
+            // 2. Initialize x_T (Pure Gaussian Noise)
+            for (let i = 0; i < pCount * 3; i++) {
+                currentPositions[i] = (Math.random() - 0.5) * 200;
+            }
+
+            // 3. Geometry
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(currentPositions, 3));
+
+            // Colors
+            const colors = new Float32Array(pCount * 3);
+            for (let i = 0; i < pCount; i++) {
+                // Color based on target Index (so we can track where they belong)
+                // In real diffusion, particles don't have IDs, but for viz we color by expected destination
+                let tx = targetPositions[i * 3];
+                let ty = targetPositions[i * 3 + 1];
+                let r = 0.2 + (tx + 50) / 100;
+                let g = 0.2 + (ty + 20) / 60;
+                colors[i * 3] = r;
+                colors[i * 3 + 1] = g;
+                colors[i * 3 + 2] = 1.0;
+            }
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 0.4,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending
+            });
+
+            particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+
+            // UI
+            document.getElementById('timeSlider').addEventListener('input', e => {
+                timeStep = e.target.value / 100.0;
+                isAuto = false;
+            });
+
+            document.getElementById('toggleBtn').addEventListener('click', () => {
+                isAuto = !isAuto;
+            });
+
+            window.addEventListener('resize', onResize);
+            animate();
+        }
+
+        function generateShipTarget() {
+            // "The Ship" Point Cloud
+            let i = 0;
+            while (i < pCount) {
+                let x = (Math.random() - 0.5) * 120;
+                let y = (Math.random() - 0.5) * 80;
+                let z = (Math.random() - 0.5) * 40;
+
+                // Hull Equation (Paraboloid ish)
+                let hull = (Math.pow(x, 2) / 200 + Math.pow(z, 2) / 60) - 20;
+
+                // Detailed Ship
+                let valid = false;
+
+                // Hull Body
+                if (Math.abs(y - hull) < 5 && y < 0) valid = true;
+
+                // Deck
+                if (y > -2 && y < 2 && Math.abs(x) < 50 && Math.abs(z) < 15) valid = true;
+
+                // Masts
+                if ((Math.abs(x - 20) < 2 || Math.abs(x + 20) < 2) && y > 0 && y < 40 && Math.abs(z) < 2) valid = true;
+
+                // Sails (Sine waves)
+                if (y > 10 && y < 35 && Math.abs(z) < 5) {
+                    let sailW = (35 - y) * 1.5;
+                    let sailX_front = 20;
+                    let sailX_back = -20;
+
+                    if (Math.abs(x - sailX_front) < sailW || Math.abs(x - sailX_back) < sailW) {
+                        // Curvature
+                        let curve = Math.sin(x * 0.5) * 5;
+                        if (Math.abs(z - curve) < 1) valid = true;
+                    }
+                }
+
+                if (valid) {
+                    targetPositions[i * 3] = x;
+                    targetPositions[i * 3 + 1] = y;
+                    targetPositions[i * 3 + 2] = z;
+                    i++;
+                }
+            }
+        }
+
+        // THE SCORE FUNCTION (Gradient of Log Probability)
+        // Ideally this is a U-Net. Here we simulate an "Oracle" U-Net.
+        // It knows strictly the vector pointing to the 'correct' location for this particle.
+        // In real diffusion, x_t doesn't have a unique x_0, but essentially the vector field points to the *nearest manifold*.
+        // For visualization clarity, we map i -> i. 
+        // This is equivalent to a "Perfect Reconstruction" model.
+        function getScore(current, targetIndex) {
+            let tx = targetPositions[targetIndex * 3];
+            let ty = targetPositions[targetIndex * 3 + 1];
+            let tz = targetPositions[targetIndex * 3 + 2];
+
+            // Vector to target
+            return {
+                x: tx - current.x,
+                y: ty - current.y,
+                z: tz - current.z
+            };
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Auto Scheduler
+            if (isAuto) {
+                timeStep -= 0.005;
+                if (timeStep < 0) timeStep = 0;
+                document.getElementById('timeSlider').value = timeStep * 100;
+            }
+
+            // Physics Update (Langevin Step)
+            const positions = particles.geometry.attributes.position.array;
+
+            // Variance Schedule: beta_t
+            // Linearly increasing noise
+            let noiseMag = timeStep * NOISE_SCALE_MAX;
+
+            // Score magnitude (Guidance strength) increases as t -> 0
+            // x_new = x + alpha * Score + noise
+
+            // However, visually, we want:
+            // t=1: Pure Noise
+            // t=0: Pure Structure
+            // So we blend the Physics.
+
+            // We use a simplified Euler-Maruyama integration
+            // x += (Target - x) * drift_rate + random * noise_scale
+
+            let driftRate = 0.05 * (1.0 - timeStep) + 0.01; // Increases as we get closer (snapping)
+            if (timeStep > 0.8) driftRate = 0.0; // Pure diffusion at start
+
+            // If timeStep is high, drift is weak, noise is high.
+            // If timeStep is low, drift is strong, noise is low.
+
+            for (let i = 0; i < pCount; i++) {
+                let ix = i * 3;
+                let iy = i * 3 + 1;
+                let iz = i * 3 + 2;
+
+                let x = positions[ix];
+                let y = positions[iy];
+                let z = positions[iz];
+
+                // 1. Calculate Score (Gradient)
+                // This simulates the U-Net inference "predict_noise" or "predict_x0"
+                // Model Output (Gradient Vector)
+                let tx = targetPositions[ix];
+                let ty = targetPositions[iy];
+                let tz = targetPositions[iz];
+
+                let dx = tx - x;
+                let dy = ty - y;
+                let dz = tz - z;
+
+                // 2. Add Langevin Noise
+                let nx = (Math.random() - 0.5) * noiseMag;
+                let ny = (Math.random() - 0.5) * noiseMag;
+                let nz = (Math.random() - 0.5) * noiseMag;
+
+                // 3. Update Position
+                // x_{t-1} = x_t + score * alpha + noise * sigma
+
+                // To make it loopable/controllable by slider without permanent destruction:
+                // We actually simulate meaningful "Velocities" towards the target based on slider
+                // But to strictly follow the slider 't', we can just set the state.
+
+                // HYBRID APPROACH:
+                // We define the "Ideal State" at time t:
+                // ideal_x = target + noise(t)
+                // And we physically pull particles towards that ideal state.
+                // This looks like Brownian motion constrained to a shrinking cloud.
+
+                let idealX = tx + (Math.random() - 0.5) * timeStep * 100; // 100 is scatter radius
+                let idealY = ty + (Math.random() - 0.5) * timeStep * 100;
+                let idealZ = tz + (Math.random() - 0.5) * timeStep * 100;
+
+                // Soft spring calc to smooth simulation
+                positions[ix] += (idealX - x) * 0.1;
+                positions[iy] += (idealY - y) * 0.1;
+                positions[iz] += (idealZ - z) * 0.1;
+
+                // If t is changing fast (Auto), we snap faster
+                if (isAuto) {
+                    positions[ix] += (idealX - x) * 0.2;
+                    positions[iy] += (idealY - y) * 0.2;
+                    positions[iz] += (idealZ - z) * 0.2;
+                }
+            }
+
+            particles.geometry.attributes.position.needsUpdate = true;
+
+            // Rotate
+            particles.rotation.y += 0.002;
+
+            // Trail Effect manually
+            // We use autoClearColor = false so we just draw a semi-transparent black rect
+            // But Points don't trail nicely in 2D canvas style. 
+            // Let's just standard clear for 3D cleanliness
+            renderer.clear();
+            renderer.render(scene, camera);
+        }
+
+        function onResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Fourier | Silo</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Space Grotesk', sans-serif;
+            user-select: none;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .nav {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            z-index: 100;
+        }
+
+        a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        a:hover {
+            color: #fff;
+        }
+
+        .hud {
+            position: absolute;
+            bottom: 3rem;
+            left: 3rem;
+            color: #fff;
+            pointer-events: none;
+            mix-blend-mode: difference;
+        }
+
+        h1 {
+            font-size: 4rem;
+            line-height: 1;
+            margin: 0;
+            letter-spacing: -0.05em;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 1rem;
+            opacity: 0.7;
+            margin: 0;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .controls {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+
+        .instruction {
+            font-size: 2rem;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 0 0 20px #000;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="nav"><a href="silo.html">← SILO</a></div>
+
+    <div class="hud">
+        <p>Experiment 06</p>
+        <h1>FOURIER</h1>
+        <div style="margin-top:10px; color:#0af;">DISCRETE FOURIER TRANSFORM (EPICYCLES)</div>
+    </div>
+
+    <div class="controls" id="overlay">
+        <div class="instruction">DRAW A CONTINUOUS LOOP</div>
+    </div>
+
+    <script>
+        // FOURIER TRANSFORM VISUALIZATION (EPICYCLES)
+        // 1. User draws a path (x, y) over time.
+        // 2. We treat points as Complex Numbers (x + iy).
+        // 3. Compute DFT to get Frequency, Amplitude, Phase for each circle.
+        // 4. Draw rotating circles.
+
+        const canvas = document.createElement('canvas');
+        document.body.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let drawing = [];
+        let fourierData = [];
+        let state = -1; // -1: Intro, 0: Drawing, 1: Computing, 2: Animating
+        let time = 0;
+        let path = [];
+        let skip = 2; // Resolution reduction
+
+        // DFT Algorithm
+        // X[k] = sum(x[n] * e^(-i * 2PI * k * n / N))
+        // Euler's: e^(ix) = cos(x) + i sin(x)
+        function dft(x) {
+            const X = [];
+            const N = x.length;
+
+            for (let k = 0; k < N; k++) {
+                let re = 0;
+                let im = 0;
+
+                for (let n = 0; n < N; n++) {
+                    const phi = (2 * Math.PI * k * n) / N;
+                    re += x[n].re * Math.cos(phi) + x[n].im * Math.sin(phi);
+                    im += -x[n].re * Math.sin(phi) + x[n].im * Math.cos(phi);
+                }
+
+                re = re / N;
+                im = im / N;
+
+                let freq = k;
+                let amp = Math.sqrt(re * re + im * im);
+                let phase = Math.atan2(im, re);
+
+                X[k] = { re, im, freq, amp, phase };
+            }
+            return X;
+        }
+
+        function init() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            state = -1;
+        }
+
+        // --- Interaction ---
+        window.addEventListener('mousedown', e => {
+            state = 0;
+            drawing = [];
+            time = 0;
+            path = [];
+            document.getElementById('overlay').style.opacity = 0;
+        });
+
+        window.addEventListener('mousemove', e => {
+            if (state === 0) {
+                drawing.push({ x: e.clientX - width / 2, y: e.clientY - height / 2 });
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (state === 0) {
+                if (drawing.length < 10) return; // Too short
+                state = 1;
+
+                // Process Data
+                const complex = [];
+                // Reduce noise
+                for (let i = 0; i < drawing.length; i += skip) {
+                    complex.push({ re: drawing[i].x, im: drawing[i].y });
+                }
+
+                // Compute DFT
+                fourierData = dft(complex);
+
+                // Sort by amplitude (Largest circles first)
+                fourierData.sort((a, b) => b.amp - a.amp);
+
+                state = 2; // Start animation
+            }
+        });
+
+        // --- Animation ---
+        function drawEpicycles(x, y, rotation, fourier) {
+            for (let i = 0; i < fourier.length; i++) {
+                let prevx = x;
+                let prevy = y;
+
+                let freq = fourier[i].freq;
+                let radius = fourier[i].amp;
+                let phase = fourier[i].phase;
+
+                // Calculate position
+                x += radius * Math.cos(freq * time + phase + rotation);
+                y += radius * Math.sin(freq * time + phase + rotation);
+
+                // Draw Circle
+                if (radius > 1) {
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                    ctx.beginPath();
+                    ctx.arc(prevx, prevy, radius, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                // Draw Line
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.beginPath();
+                ctx.moveTo(prevx, prevy);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            }
+            return { x, y };
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+
+            if (state === 0) {
+                // Drawing Mode
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                if (drawing.length > 0) ctx.moveTo(drawing[0].x + width / 2, drawing[0].y + height / 2);
+                for (let p of drawing) ctx.lineTo(p.x + width / 2, p.y + height / 2);
+                ctx.stroke();
+            }
+            else if (state === 2) {
+                // Fourier Mode
+
+                // Center
+                let vx = width / 2;
+                let vy = height / 2;
+
+                let v = drawEpicycles(vx, vy, 0, fourierData);
+
+                // Append point to path
+                path.unshift(v);
+
+                // Draw Resulting Path
+                ctx.beginPath();
+                ctx.strokeStyle = '#0af';
+                ctx.lineWidth = 2;
+                if (path.length > 0) ctx.moveTo(path[0].x, path[0].y);
+                for (let i = 0; i < path.length; i++) {
+                    ctx.lineTo(path[i].x, path[i].y);
+                }
+                ctx.stroke();
+
+                // Limit path length to 1 cycle roughly
+                const N = fourierData.length;
+                const dt = (Math.PI * 2) / N;
+                time += dt;
+
+                if (path.length > N) path.pop();
+            }
+        }
+
+        window.addEventListener('resize', init);
+        init();
+        animate();
+
+    </script>
+</body>
+
+</html>

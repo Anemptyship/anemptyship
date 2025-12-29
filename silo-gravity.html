@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Gravity | Silo</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Space Grotesk', sans-serif;
+            user-select: none;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .nav {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            z-index: 100;
+        }
+
+        a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        a:hover {
+            color: #fff;
+        }
+
+        .hud {
+            position: absolute;
+            bottom: 3rem;
+            left: 3rem;
+            color: #fff;
+            pointer-events: none;
+            mix-blend-mode: difference;
+        }
+
+        h1 {
+            font-size: 4rem;
+            line-height: 1;
+            margin: 0;
+            letter-spacing: -0.05em;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 1rem;
+            opacity: 0.7;
+            margin: 0;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .hint {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.4);
+            pointer-events: none;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="nav"><a href="silo.html">← SILO</a></div>
+
+    <div class="hud">
+        <p>Experiment 04</p>
+        <h1>GRAVITY</h1>
+        <div style="margin-top:10px; color:#fa0;">N-BODY SIMULATION</div>
+    </div>
+
+    <div class="hint" id="hint">Click & Drag to Sling Planets</div>
+
+    <script>
+        // GRAVITY: N-BODY SIMULATION
+        // F = G * m1 * m2 / r^2
+
+        const canvas = document.createElement('canvas');
+        document.body.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let bodies = [];
+
+        // Settings
+        const G = 0.5;
+
+        class Body {
+            constructor(x, y, m, vx, vy, color) {
+                this.x = x;
+                this.y = y;
+                this.m = m;
+                this.vx = vx;
+                this.vy = vy;
+                this.radius = Math.sqrt(m) * 2;
+                this.color = color || '#fff';
+                this.trail = [];
+            }
+
+            update() {
+                // Gravity
+                for (let other of bodies) {
+                    if (other === this) continue;
+
+                    let dx = other.x - this.x;
+                    let dy = other.y - this.y;
+                    let distSq = dx * dx + dy * dy;
+                    let dist = Math.sqrt(distSq);
+
+                    if (dist < (this.radius + other.radius)) {
+                        // Collision? Merge logic or bounce. 
+                        // Simple merge for stability
+                        // Assume we merge into larger one or bounce
+                        // Let's implement soft bounce/merge
+                    }
+
+                    if (dist > 5) { // Softener
+                        let f = G * this.m * other.m / distSq;
+                        let ax = f * dx / dist / this.m;
+                        let ay = f * dy / dist / this.m;
+
+                        this.vx += ax;
+                        this.vy += ay;
+                    }
+                }
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Trail
+                if (frame % 3 === 0) {
+                    this.trail.push({ x: this.x, y: this.y });
+                    if (this.trail.length > 50) this.trail.shift();
+                }
+            }
+
+            draw() {
+                // Trail
+                ctx.beginPath();
+                ctx.strokeStyle = this.color;
+                ctx.globalAlpha = 0.3;
+                if (this.trail.length > 0) ctx.moveTo(this.trail[0].x, this.trail[0].y);
+                for (let p of this.trail) ctx.lineTo(p.x, p.y);
+                ctx.stroke();
+
+                // Body
+                ctx.globalAlpha = 1.0;
+                ctx.beginPath();
+                ctx.fillStyle = this.color;
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                // Glow
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        let frame = 0;
+        let dragStart = null;
+        let dragCurrent = null;
+
+        function init() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            bodies = [];
+
+            // Sun
+            bodies.push(new Body(width / 2, height / 2, 200, 0, 0, '#fa0'));
+        }
+
+        function animate() {
+            frame++;
+            // Clear with trail
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.fillRect(0, 0, width, height);
+
+            for (let b of bodies) {
+                b.update();
+                b.draw();
+            }
+
+            // Draw Drag Line
+            if (dragStart && dragCurrent) {
+                ctx.beginPath();
+                ctx.strokeStyle = '#fff';
+                ctx.moveTo(dragStart.x, dragStart.y);
+                ctx.lineTo(dragCurrent.x, dragCurrent.y);
+                ctx.setLineDash([5, 5]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Preview planet
+                ctx.beginPath();
+                ctx.arc(dragStart.x, dragStart.y, 10, 0, Math.PI * 2);
+                ctx.strokeStyle = '#fff';
+                ctx.stroke();
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // Interaction
+        window.addEventListener('mousedown', e => {
+            document.getElementById('hint').style.display = 'none';
+            dragStart = { x: e.clientX, y: e.clientY };
+            dragCurrent = { x: e.clientX, y: e.clientY };
+        });
+        window.addEventListener('mousemove', e => {
+            if (dragStart) dragCurrent = { x: e.clientX, y: e.clientY };
+        });
+        window.addEventListener('mouseup', e => {
+            if (dragStart) {
+                let dx = dragStart.x - e.clientX;
+                let dy = dragStart.y - e.clientY;
+
+                // Create Planet
+                // Velocity based on drag distance
+                let vx = dx * 0.05;
+                let vy = dy * 0.05;
+
+                // Random Mass 5-20
+                let mass = 5 + Math.random() * 15;
+                let color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+
+                bodies.push(new Body(dragStart.x, dragStart.y, mass, vx, vy, color));
+
+                dragStart = null;
+                dragCurrent = null;
+            }
+        });
+
+        window.addEventListener('resize', init);
+
+        init();
+        animate();
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Topology | Silo</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .nav {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            z-index: 100;
+        }
+
+        a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        a:hover {
+            color: #fff;
+        }
+
+        .hud {
+            position: absolute;
+            bottom: 3rem;
+            left: 3rem;
+            color: #fff;
+            pointer-events: none;
+            mix-blend-mode: difference;
+        }
+
+        h1 {
+            font-size: 3rem;
+            line-height: 1;
+            margin: 0;
+            letter-spacing: -0.05em;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin: 0;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="nav"><a href="silo.html">← SILO</a></div>
+    <div class="hud">
+        <p>Experiment 18</p>
+        <h1>TOPOLOGY</h1>
+        <div style="margin-top:10px; color:#0f0;">LORENZ ATTRACTOR</div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        let x = 0.1, y = 0, z = 0;
+        let sigma = 10;
+        let rho = 28;
+        let beta = 8 / 3;
+
+        let points = [];
+
+        function init() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+        }
+
+        function loop() {
+            // Faint clear for trails
+            ctx.fillStyle = 'rgba(0,0,0,0.05)';
+            ctx.fillRect(0, 0, width, height);
+
+            // Integrate
+            let dt = 0.01;
+            for (let i = 0; i < 20; i++) { // Speed up
+                let dx = sigma * (y - x);
+                let dy = x * (rho - z) - y;
+                let dz = x * y - beta * z;
+
+                x += dx * dt;
+                y += dy * dt;
+                z += dz * dt;
+
+                points.push({ x, y, z });
+                if (points.length > 2000) points.shift();
+            }
+
+            // Draw
+            ctx.beginPath();
+            let started = false;
+            let hue = 0;
+
+            // Project
+            // Simple perspective or ortho?
+            // Scale and center using simple 2D projection
+            // Rotating view?
+
+            let angle = Date.now() * 0.0005;
+
+            for (let p of points) {
+                // Rotate around Z axis (which is up usually, but here Y is up in 2D)
+                // Let's rotate around Y axis (vertical)
+                let rx = p.x * Math.cos(angle) - p.z * Math.sin(angle);
+                let rz = p.x * Math.sin(angle) + p.z * Math.cos(angle);
+
+                let scale = 15;
+                let px = width / 2 + rx * scale;
+                let py = height / 2 - p.y * scale + 400; // Shift down
+
+                // Color
+                ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
+                if (!started) { ctx.moveTo(px, py); started = true; }
+                else ctx.lineTo(px, py);
+
+                hue += 0.1;
+
+                // Breaking lines to change color is hard with one path.
+                // Just use one color or small segments?
+                // Small segments is slow in Canvas 2D.
+                // Let's just draw white or single gradient color.
+            }
+            ctx.stroke();
+
+            requestAnimationFrame(loop);
+        }
+
+        // Re-implement Loop for Color
+        function loopColored() {
+            ctx.fillStyle = 'rgba(0,0,0,0.1)';
+            ctx.fillRect(0, 0, width, height);
+
+            let dt = 0.005;
+            // Just draw new segments
+            for (let i = 0; i < 10; i++) {
+                let dx = sigma * (y - x);
+                let dy = x * (rho - z) - y;
+                let dz = x * y - beta * z;
+
+                let nx = x + dx * dt;
+                let ny = y + dy * dt;
+                let nz = z + dz * dt;
+
+                let angle = Date.now() * 0.0002;
+
+                function project(ax, ay, az) {
+                    let rx = ax * Math.cos(angle) - az * Math.sin(angle);
+                    let scale = 15;
+                    return { x: width / 2 + rx * scale, y: height / 2 - ay * scale + 300 };
+                }
+
+                let p1 = project(x, y, z);
+                let p2 = project(nx, ny, nz);
+
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+
+                // Color based on Z or Velocity?
+                let hue = (Date.now() * 0.1 + i) % 360;
+                ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                x = nx; y = ny; z = nz;
+            }
+            requestAnimationFrame(loopColored);
+        }
+
+        window.addEventListener('resize', init);
+        init();
+        loopColored();
+
+    </script>
+</body>
+
+</html>

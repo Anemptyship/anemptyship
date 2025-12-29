@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Swarm | Silo</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .nav {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            z-index: 100;
+        }
+
+        a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        a:hover {
+            color: #fff;
+        }
+
+        .hud {
+            position: absolute;
+            bottom: 3rem;
+            left: 3rem;
+            color: #fff;
+            pointer-events: none;
+            mix-blend-mode: difference;
+        }
+
+        h1 {
+            font-size: 3rem;
+            line-height: 1;
+            margin: 0;
+            letter-spacing: -0.05em;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin: 0;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="nav"><a href="silo.html">← SILO</a></div>
+    <div class="hud">
+        <p>Experiment 14</p>
+        <h1>SWARM</h1>
+        <div style="margin-top:10px; color:#ff0;">BOIDS ALGORITHM</div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        let boids = [];
+        const NUM_BOIDS = 400;
+
+        class Boid {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = (Math.random() - 0.5) * 4;
+            }
+
+            update(boids) {
+                // Rules
+                let separation = { x: 0, y: 0 };
+                let alignment = { x: 0, y: 0 };
+                let cohesion = { x: 0, y: 0 };
+                let count = 0;
+
+                const perception = 50;
+
+                for (let other of boids) {
+                    let d = Math.sqrt((this.x - other.x) ** 2 + (this.y - other.y) ** 2);
+                    if (other !== this && d < perception) {
+                        // Sep
+                        let diffX = this.x - other.x;
+                        let diffY = this.y - other.y;
+                        separation.x += diffX / d;
+                        separation.y += diffY / d;
+
+                        // Align
+                        alignment.x += other.vx;
+                        alignment.y += other.vy;
+
+                        // Coh
+                        cohesion.x += other.x;
+                        cohesion.y += other.y;
+
+                        count++;
+                    }
+                }
+
+                if (count > 0) {
+                    // Avg
+                    alignment.x /= count; alignment.y /= count;
+                    alignment.x = (alignment.x - this.vx) * 0.05;
+                    alignment.y = (alignment.y - this.vy) * 0.05;
+
+                    cohesion.x /= count; cohesion.y /= count;
+                    cohesion.x = (cohesion.x - this.x) * 0.01;
+                    cohesion.y = (cohesion.y - this.y) * 0.01;
+
+                    separation.x *= 0.05;
+                    separation.y *= 0.05;
+
+                    this.vx += alignment.x + cohesion.x + separation.x;
+                    this.vy += alignment.y + cohesion.y + separation.y;
+                }
+
+                // Mouse Fear
+                let dMouse = Math.sqrt((this.x - mouse.x) ** 2 + (this.y - mouse.y) ** 2);
+                if (dMouse < 100) {
+                    this.vx += (this.x - mouse.x) * 0.05;
+                    this.vy += (this.y - mouse.y) * 0.05;
+                }
+
+                // Limit Speed
+                const maxSpeed = 4;
+                const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                if (speed > maxSpeed) {
+                    this.vx = (this.vx / speed) * maxSpeed;
+                    this.vy = (this.vy / speed) * maxSpeed;
+                }
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Wrap
+                if (this.x < 0) this.x = width;
+                if (this.x > width) this.x = 0;
+                if (this.y < 0) this.y = height;
+                if (this.y > height) this.y = 0;
+            }
+
+            draw() {
+                const angle = Math.atan2(this.vy, this.vx);
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(angle);
+
+                ctx.fillStyle = '#ff0';
+                ctx.beginPath();
+                ctx.moveTo(6, 0);
+                ctx.lineTo(-4, 3);
+                ctx.lineTo(-4, -3);
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        let mouse = { x: -1000, y: -1000 };
+        window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+        function init() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            boids = [];
+            for (let i = 0; i < NUM_BOIDS; i++) boids.push(new Boid());
+        }
+
+        function loop() {
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.fillRect(0, 0, width, height);
+
+            for (let b of boids) {
+                b.update(boids);
+                b.draw();
+            }
+            requestAnimationFrame(loop);
+        }
+
+        window.addEventListener('resize', init);
+        init();
+        loop();
+
+    </script>
+</body>
+
+</html>

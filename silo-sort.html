@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Sort | Silo</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .nav {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            z-index: 100;
+        }
+
+        a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        a:hover {
+            color: #fff;
+        }
+
+        .hud {
+            position: absolute;
+            bottom: 3rem;
+            left: 3rem;
+            color: #fff;
+            pointer-events: none;
+            mix-blend-mode: difference;
+        }
+
+        h1 {
+            font-size: 3rem;
+            line-height: 1;
+            margin: 0;
+            letter-spacing: -0.05em;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin: 0;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .controls {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            color: #fff;
+        }
+
+        button {
+            background: transparent;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 5px 10px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="nav"><a href="silo.html">← SILO</a></div>
+    <div class="hud">
+        <p>Experiment 17</p>
+        <h1>SORT</h1>
+        <div style="margin-top:10px; color:#ff0;">VISUAL ALGORITHMS</div>
+    </div>
+
+    <div class="controls">
+        <button onclick="startSort('bubble')">BUBBLE</button>
+        <button onclick="startSort('quick')">QUICK</button>
+        <button onclick="startSort('merge')">MERGE</button>
+        <button onclick="shuffle()">SHUFFLE</button>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        let values = [];
+        const COUNT = 200;
+
+        function init() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            shuffle();
+        }
+
+        function shuffle() {
+            values = [];
+            for (let i = 0; i < COUNT; i++) values.push(Math.random());
+            draw();
+        }
+
+        function draw(highlightIndices = []) {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+
+            const barW = width / COUNT;
+            for (let i = 0; i < COUNT; i++) {
+                let h = values[i] * height * 0.8;
+                let hue = values[i] * 360;
+
+                if (highlightIndices.includes(i)) ctx.fillStyle = '#fff';
+                else ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+
+                ctx.fillRect(i * barW, height - h, barW + 1, h);
+            }
+        }
+
+        // --- SORTERS using async generator approach to animate ---
+
+        let currentSort = null;
+
+        async function startSort(type) {
+            if (currentSort) return; // Busy
+            if (type === 'bubble') await bubbleSort();
+            if (type === 'quick') await quickSort(0, COUNT - 1);
+            if (type === 'merge') await mergeSort(0, COUNT - 1);
+            draw();
+        }
+
+        function delay() {
+            return new Promise(r => setTimeout(r, 10)); // Speed
+        }
+
+        // BUBBLE
+        async function bubbleSort() {
+            for (let i = 0; i < COUNT; i++) {
+                for (let j = 0; j < COUNT - i - 1; j++) {
+                    if (values[j] > values[j + 1]) {
+                        let temp = values[j];
+                        values[j] = values[j + 1];
+                        values[j + 1] = temp;
+                        draw([j, j + 1]);
+                        await delay();
+                    }
+                }
+            }
+        }
+
+        // QUICK
+        async function quickSort(start, end) {
+            if (start >= end) return;
+            let index = await partition(start, end);
+            await Promise.all([
+                quickSort(start, index - 1),
+                quickSort(index + 1, end)
+            ]);
+        }
+        async function partition(start, end) {
+            let pivotIndex = start;
+            let pivotValue = values[end];
+            for (let i = start; i < end; i++) {
+                if (values[i] < pivotValue) {
+                    let temp = values[i];
+                    values[i] = values[pivotIndex];
+                    values[pivotIndex] = temp;
+                    pivotIndex++;
+                    draw([i, pivotIndex]);
+                    await delay();
+                }
+            }
+            let temp = values[pivotIndex];
+            values[pivotIndex] = values[end];
+            values[end] = temp;
+            return pivotIndex;
+        }
+
+        // MERGE
+        async function mergeSort(start, end) {
+            if (start >= end) return;
+            const mid = Math.floor((start + end) / 2);
+            await mergeSort(start, mid);
+            await mergeSort(mid + 1, end);
+            await merge(start, mid, end);
+        }
+
+        async function merge(start, mid, end) {
+            let left = values.slice(start, mid + 1);
+            let right = values.slice(mid + 1, end + 1);
+            let i = 0, j = 0, k = start;
+
+            while (i < left.length && j < right.length) {
+                if (left[i] < right[j]) values[k] = left[i++];
+                else values[k] = right[j++];
+                k++;
+                draw([k]);
+                await delay();
+            }
+            while (i < left.length) { values[k++] = left[i++]; draw([k]); await delay(); }
+            while (j < right.length) { values[k++] = right[j++]; draw([k]); await delay(); }
+        }
+
+        window.addEventListener('resize', init);
+        init();
+
+    </script>
+</body>
+
+</html>
