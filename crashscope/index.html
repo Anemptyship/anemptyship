@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="dark" />
-<title>CrashScope — -10% / -20% 급락 위험 대시보드</title>
+<title>CrashScope — 현재 하락 확률·미래 가격 범위</title>
 <style>
 :root{--bg:#080d18;--panel:#111a29;--panel2:#151f31;--line:#27354b;--txt:#edf4ff;--sub:#96a8c2;--mut:#6c819c;--blue:#65c9ff;--mint:#66e4b5;--coral:#ff8497;--gold:#ffc57a;--grad:linear-gradient(120deg,#74d4ff,#6ce6bf);font-synthesis:none}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 10% -20%,#113651 0%,transparent 36%),radial-gradient(circle at 90% 8%,#202545 0%,transparent 36%),var(--bg);color:var(--txt);font:14px/1.57 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Segoe UI",sans-serif;min-height:100vh}
@@ -18,33 +18,82 @@ a{color:var(--blue)}button,select,input{font:inherit}button{cursor:pointer}butto
 .two{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(360px,1fr);gap:16px;margin-bottom:20px}.panel{border:1px solid var(--line);background:linear-gradient(165deg,#121c2c,#0e1725);border-radius:16px;min-width:0;padding:20px 21px;overflow:hidden}.panel h3{font-size:16px;margin:0;letter-spacing:-.3px}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:15px}.subhead{color:var(--sub);font-size:12px;margin:5px 0 0}.seg{display:inline-flex;gap:3px;background:#0b1524;border:1px solid #2c405a;border-radius:10px;padding:3px}.seg button{padding:6px 11px;border:0;background:transparent;color:#96abc5;border-radius:7px;font-size:11px;font-weight:700}.seg button.on{background:#2b425d;color:#eff8ff}.chartbox{position:relative;width:100%;height:300px}.chartbox.short{height:236px}.chartbox svg{width:100%;height:100%;overflow:visible;display:block}.chartbox .axis{fill:#859ab5;font-size:11px;font-family:inherit}.chartbox .gridline{stroke:#2b3b50;stroke-dasharray:3 5;stroke-width:1}.chartbox .chartline{fill:none;stroke:var(--blue);stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}.chartbox .chartarea{fill:url(#priceFill)}.chartbox .marker{fill:#ff93a2;stroke:#201a29;stroke-width:1}.tooltip{position:absolute;z-index:3;pointer-events:none;opacity:0;transform:translate(-50%,-108%);background:#16263af7;border:1px solid #55708c;border-radius:10px;padding:8px 11px;font-size:12px;color:#e9f5ff;box-shadow:0 10px 28px #0006;min-width:130px;white-space:nowrap}.tooltip.open{opacity:1}.placeholder{display:grid;place-items:center;height:100%;min-height:180px;color:#95aec6;border:1px dashed #30445c;border-radius:12px;text-align:center;padding:20px}.bargraph{height:285px}.table-wrap{overflow:auto}.stat-table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}.stat-table th{color:#8197b4;font-weight:700;text-align:right;padding:10px 7px;border-bottom:1px solid #2f4159}.stat-table th:first-child,.stat-table td:first-child{text-align:left}.stat-table td{padding:9px 7px;text-align:right;color:#d2e4f5;border-bottom:1px solid #243247}.stat-table tr:last-child td{border-bottom:0}.stat-table tbody tr{cursor:pointer}.stat-table tbody tr:hover{background:#20334a}.stat-table tr.selected{background:#183348}.stat-table strong{color:#e8f7ff}.stat-table small{color:#9ab0ca}.quality{margin-top:13px;padding:12px 14px;border:1px solid #30455d;background:#172439;border-radius:11px;color:#a9bdd4;font-size:12px}.quality b{color:#edf7ff}.quality .point{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--gold);margin-right:7px}
 .about{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:30px}.about .panel{padding:24px}.about h3{font-size:17px;margin-bottom:13px}.about p{font-size:13px;color:#a9bcd0;margin:0 0 11px;line-height:1.8}.about code{color:#dbeaff;background:#25354a;padding:2px 5px;border-radius:5px}.about ul{padding-left:19px;color:#b2c5d7;font-size:12.5px;line-height:1.85}.about li{margin-bottom:7px}footer{border-top:1px solid #26364c;color:#7289a6;padding:22px 0 37px;font-size:12px}.footerrow{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.footerrow a{text-decoration:none}.loader{padding:62px;text-align:center;color:#b4c9da}.spin{display:inline-block;border:2px solid #29425f;border-top-color:var(--mint);height:24px;width:24px;border-radius:50%;animation:sp .8s linear infinite;margin-bottom:10px}@keyframes sp{to{transform:rotate(360deg)}}.hidden{display:none!important}
 @media(max-width:1050px){.wrap{width:min(100% - 32px,1000px)}nav{display:none}.two{grid-template-columns:1fr}.grid-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:670px){header .wrap{height:60px}.brand{font-size:18px}.topright .tag{display:none}.mobile-hide{display:none}.hero{padding:35px 0 22px}.hero h1{letter-spacing:-1.6px}.controls{padding:15px;gap:12px}.control{flex:1;min-width:130px}.control select{width:100%;min-width:0}.control.grow select{max-width:none}.control-spacer{display:none}.grid-metrics{gap:8px;margin-bottom:24px}.metric{padding:14px 13px;min-height:104px}.metric strong{font-size:23px}.six{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.risk{min-height:153px;padding:13px 13px}.risk-main b{font-size:26px}.risk-main small{display:none}.risk-sub{font-size:10px}.panel{padding:17px 14px}.about{grid-template-columns:1fr}.chartbox{height:265px}.chartbox.short{height:205px}.bargraph{height:260px}.sectionheading h2{font-size:18px}}
+
+/* Price distribution and future risk visualization */
+.forecast-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:6px 0 16px}.forecast-head h2{font-size:23px;letter-spacing:-.6px;margin:0}.forecast-head p{color:var(--sub);font-size:12px;margin:6px 0 0;line-height:1.7}.forecast-section{margin:4px 0 29px;border:1px solid #31516a;background:linear-gradient(155deg,#132238,#101a2d);border-radius:19px;padding:20px 22px 19px;box-shadow:0 0 35px #46b2ec0a}.forecast-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:17px}.forecast-card{border:1px solid #2e4560;border-radius:13px;background:#101a29;padding:15px}.forecast-card .horizon{font-size:12px;font-weight:800;color:#9bc7df;display:block}.forecast-card .down{font-size:27px;font-weight:850;color:#ffb0a8;letter-spacing:-.9px;margin:4px 0 1px;display:block}.forecast-card .detail{font-size:12px;color:#a9bdd2;line-height:1.8}.forecast-card .detail b{color:#e6f5ff}.forecast-card .sub{border-top:1px solid #273c53;margin-top:10px;padding-top:9px;color:#8ea7c1;font-size:11px}.forecast-card .sub b{color:#cfe9fb}.forecast-legend{display:flex;gap:15px;align-items:center;flex-wrap:wrap;color:#adc1d8;font-size:11.5px;margin:8px 0 15px}.forecast-legend .key{display:inline-block;width:17px;height:8px;border-radius:3px;margin-right:5px;vertical-align:middle}.forecast-chart{height:345px;min-height:260px}.forecast-chart svg{width:100%;height:100%;display:block}.forecast-table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}.forecast-table td,.forecast-table th{padding:9px 11px;border-bottom:1px solid #29394e;text-align:right}.forecast-table th:first-child,.forecast-table td:first-child{text-align:left}.forecast-table th{color:#92a8c1;font-weight:750}.forecast-table td{color:#dceaff}.forecast-table tbody tr:last-child td{border-bottom:0}.forecast-note{font-size:12px;color:#9db4cd;line-height:1.75;margin:13px 0 0}.forecast-note b{color:#f2d0a8}.forecast-stale{border:1px dashed #5b4654;border-radius:13px;padding:23px;text-align:center;color:#ffc0c0}.predict-split{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(410px,.85fr);gap:17px;margin-bottom:14px}.forecast-minihead{color:#d9eefe;font-size:14px;font-weight:750;margin:0 0 12px}.pred-quantile{font-size:11px;color:#91a9c0}
+@media(max-width:1050px){.predict-split{grid-template-columns:1fr}}@media(max-width:670px){.forecast-section{padding:16px 13px}.forecast-grid{grid-template-columns:1fr;gap:9px}.forecast-card{padding:11px 14px}.forecast-chart{height:285px}.forecast-table{font-size:11px}.forecast-table td,.forecast-table th{padding:8px 8px}.forecast-grid .forecast-card .down{font-size:24px}}
 </style>
 </head>
 <body>
-<header><div class="wrap"><a class="brand" href="#top"><span class="logo"><svg width="23" height="23" viewBox="0 0 24 24" fill="none"><path d="m2 7 5 5 4-4 4 7 7-8" stroke="#86dfff" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/><path d="M19 7h3v3" stroke="#6ee2b8" stroke-width="2" stroke-linecap="round"/></svg></span><span>CrashScope<small>MARKET RISK LAB</small></span></a><nav><a href="#six">6개 시나리오</a><a href="#charts">가격·변동성</a><a href="#validation">모델 검증</a><a href="#methodology">방법론</a></nav><div class="topright"><span class="tag"><i class="dot"></i> 최신 거래일 조회 · 연구용</span><button class="btn" id="importBtn">CSV <span class="mobile-hide">가져오기</span> ↗</button><input id="fileInput" type="file" accept=".csv,text/csv" hidden></div></div></header>
+<header><div class="wrap"><a class="brand" href="#top"><span class="logo"><svg width="23" height="23" viewBox="0 0 24 24" fill="none"><path d="m2 7 5 5 4-4 4 7 7-8" stroke="#86dfff" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/><path d="M19 7h3v3" stroke="#6ee2b8" stroke-width="2" stroke-linecap="round"/></svg></span><span>CrashScope<small>MARKET RISK LAB</small></span></a><nav><a href="#prediction">현재 예상 범위</a><a href="#six">6개 시나리오</a><a href="#charts">가격·변동성</a><a href="#validation">모델 검증</a><a href="#methodology">방법론</a></nav><div class="topright"><span class="tag"><i class="dot"></i> 최신 거래일 자동 갱신 · 비공식 시세</span><button class="btn" id="importBtn">CSV <span class="mobile-hide">가져오기</span> ↗</button><input id="fileInput" type="file" accept=".csv,text/csv" hidden></div></div></header>
 <main id="top" class="wrap">
-<section class="hero"><div class="eyebrow">DOWNSIDE RISK MONITOR · 6 SCENARIOS</div><h1>-10%와 -20% 하락 위험을<br><span>세 가지 기간으로 분석합니다.</span></h1><p class="desc">1주·1개월·3개월 × -10%·-20%를 한 화면에서 비교하세요. 역사적 발생률, 유사 국면 비교, 간단한 로지스틱 회귀를 구분하고 시계열 검증 결과까지 표시합니다. <strong>미래 급락을 보장하거나 실시간 호가 스트리밍이 아니며 최신 거래일 가격에서 추정한 연구용 값일 뿐입니다.</strong></p><div class="hero-trust"><span class="chip"><b>6개</b> 급락 조건</span><span class="chip"><b>5 / 21 / 63</b> 거래일</span><span class="chip"><b>최신 종가</b> 자동 조회</span><span class="chip"><b>누출 방지</b> 시계열 분리 검증</span><span class="chip"><b>CSV</b> 직접 업로드 지원</span></div></section>
+<section class="hero"><div class="eyebrow">DOWNSIDE RISK MONITOR · 6 SCENARIOS</div><h1>-10%와 -20% 하락 위험을<br><span>세 가지 기간으로 분석합니다.</span></h1><p class="desc">현재 기준가에서 향후 1주·1개월·3개월의 종가 하락 확률과 예상 가격 범위(80%·90% 시나리오)를 경로 시뮬레이션으로 계산합니다. 같은 경로에서 -10%·-20% 도달 위험도 비교합니다. <strong>가격은 접속 시 조회되는 최신 거래일 기준이며 지연되거나 제공되지 않을 수 있습니다. 미래 급락 확률은 검증된 실시간 투자 신호가 아닙니다.</strong></p><div class="hero-trust"><span class="chip"><b>6개</b> 급락 조건</span><span class="chip"><b>5 / 21 / 63</b> 거래일</span><span class="chip"><b>최신 일별 데이터</b> 접속 시 갱신</span><span class="chip"><b>누출 방지</b> 시계열 분리 검증</span><span class="chip"><b>CSV</b> 직접 업로드 지원</span></div></section>
 <div id="alert" class="alert" role="status"></div>
-<section class="controls" aria-label="분석 설정"><label class="control grow"><span>분석 자산</span><select id="tickerSelect"><option>데이터 불러오는 중…</option></select></label><label class="control"><span>과거 학습 구간</span><select id="historySelect"><option value="all">전체 기간</option><option value="15">최근 15년</option><option value="10" selected>최근 10년</option><option value="5">최근 5년</option></select></label><label class="control"><span>발생 확률 기준</span><select id="displaySelect"><option value="logit">로지스틱 모델 (실험)</option><option value="analog">유사 국면 발생률</option><option value="base">과거 단순 발생률</option></select></label><label class="control"><span>다른 종목 입력</span><input type="text" id="liveSymbolInput" placeholder="NVDA / 005930.KS" maxlength="24"></label><button class="btn" id="liveSymbolBtn">종목 조회</button><div class="control-spacer"></div><div class="control note"><span>가격 데이터 출처 · 기준일</span><div class="source" id="dataInfo"><span class="status"><i></i>연결 중…</span></div></div><button class="btn" id="exportBtn" disabled>분석 CSV ↓</button><button class="btn" id="reloadBtn">최신 시세 갱신</button></section>
-<section id="dashboard"><div id="loading" class="loader"><div class="spin"></div><br>최신 거래일 가격과 10년간 일별 가격 데이터를 불러오는 중입니다…<br><small>연결 실패 시 위의 ‘CSV 가져오기’로 직접 분석할 수 있습니다.</small></div><div id="content" class="hidden">
+<section class="controls" aria-label="분석 설정"><label class="control grow"><span>분석 자산</span><select id="tickerSelect"><option>데이터 불러오는 중…</option></select></label><label class="control"><span>과거 학습 구간</span><select id="historySelect"><option value="all" selected>전체 약 20년</option><option value="10">최근 10년</option><option value="5">최근 5년</option></select></label><label class="control"><span>발생 확률 기준</span><select id="displaySelect"><option value="path" selected>경로 시뮬레이션 (추천)</option><option value="logit">로지스틱 모델 (실험)</option><option value="analog">유사 국면 발생률</option><option value="base">과거 단순 발생률</option></select></label><label class="control"><span>다른 종목코드 (예: NVDA)</span><input type="text" id="symbolInput" placeholder="AAPL / 005930.KS" maxlength="24" autocomplete="off"></label><button class="btn" id="symbolBtn">종목 조회</button><div class="control-spacer"></div><div class="control note"><span>가격 데이터 출처 · 기준일</span><div class="source" id="dataInfo"><span class="status"><i></i>연결 중…</span></div></div><button class="btn" id="exportBtn" disabled>분석 CSV ↓</button><button class="btn" id="reloadBtn">최신 시세 갱신</button></section>
+<section id="dashboard"><div id="loading" class="loader"><div class="spin"></div><br>최신 거래일 가격과 최대 20년 이력을 조회하고 있습니다…<br><small>Yahoo Finance 비공식 데이터 + CORS 중계. 실패하면 수치를 지어내지 않습니다.</small></div><div id="content" class="hidden">
 <div class="grid-metrics" id="metrics"></div>
-<section id="six"><div class="sectionheading"><div><h2>급락 시나리오 6개</h2><p>카드를 누르면 아래 가격·검증 차트가 해당 조건으로 변경됩니다.</p></div><div class="legend"><span><i class="swatch"></i> 선택 모델</span><span><i class="swatch mint"></i> 전체 과거 발생률</span></div></div><div class="six" id="scenarioCards"></div><p class="callout">* 겹치는 기간의 시작일들은 독립 표본이 아니며, 드문 급락의 추정치는 매우 불안정할 수 있습니다. 0%는 “안전하다”는 뜻이 아닙니다.</p></section>
+<section id="prediction" class="forecast-section" aria-label="현재 하락 확률과 미래 가격 예상 범위">
+ <div class="forecast-head"><div><h2>현재 하락 확률 · 미래 가격 범위</h2><p id="forecastAsOf">최신 시세 확인 중 · 5 / 21 / 63거래일</p></div><span class="tag"><i class="dot"></i> 가격 경로 12,000회 시뮬레이션</span></div>
+ <div id="forecastContents"><div class="placeholder">최신 가격을 확인하면 확률과 예상 구간을 계산합니다.</div></div>
+ <p class="forecast-note"><b>해석:</b> “하락 확률”은 해당 기간 <strong>마지막 종가가 현재보다 낮을 확률</strong>입니다. “-10%·-20% 도달 확률”은 그 기간 <strong>어느 날이든 종가가 기준가보다 해당 비율 이하로 내려갈 확률</strong>입니다. 80%·90% 예상 구간은 끝나는 날의 가격 분포 구간이며 가격의 확실한 상한·하한이 아닙니다. 역사적 수익률을 재표본화한 <strong>실험적 조건부 부트스트랩</strong>으로, 실제 확률의 정확성이 검증된 모델이 아닙니다.</p>
+</section>
+<section id="six"><div class="sectionheading"><div><h2>급락 시나리오 6개</h2><p>시뮬레이션을 선택하면 상단의 가격 구간과 동일한 경로에서 산출합니다. 카드를 누르면 아래 가격·검증 차트가 해당 조건으로 변경됩니다.</p></div><div class="legend"><span><i class="swatch"></i> 선택 모델</span><span><i class="swatch mint"></i> 전체 과거 발생률</span></div></div><div class="six" id="scenarioCards"></div><p class="callout">* 겹치는 기간의 시작일들은 독립 표본이 아니며, 드문 급락의 추정치는 매우 불안정할 수 있습니다. 0%는 “안전하다”는 뜻이 아닙니다.</p></section>
 <section class="two" id="charts"><article class="panel"><div class="panel-head"><div><h3 id="priceHeading">가격 흐름</h3><p class="subhead">수정 종가 · 처음 값을 100으로 환산 · 빨간 점은 과거 해당 급락 구간의 시작</p></div><div class="seg" id="rangeSeg"><button data-range="1" type="button">1년</button><button data-range="5" type="button" class="on">5년</button><button data-range="all" type="button">전체</button></div></div><div class="chartbox" id="priceChart"><div class="tooltip" id="priceTip"></div></div></article><article class="panel"><div class="panel-head"><div><h3>6개 하락 조건 비교</h3><p class="subhead">선택 기준 vs 과거 발생률 · 단위 %</p></div></div><div class="chartbox bargraph" id="barChart"></div><div class="legend" style="margin-top:0"><span><i class="swatch"></i><span id="selectedModelLabel">로지스틱 모델</span></span><span><i class="swatch mint"></i>기본 발생률</span></div></article></section>
 <section class="two"><article class="panel"><div class="panel-head"><div><h3>위험 지표 추이</h3><p class="subhead">20거래일 연율화 실현변동성 vs VIX (VIX 자료가 있을 때)</p></div></div><div class="chartbox short" id="volChart"></div><div class="legend"><span><i class="swatch"></i>20일 실현변동성</span><span><i class="swatch coral"></i>VIX</span></div></article><article class="panel" id="validation"><div class="panel-head"><div><h3 id="valHeading">모델 시계열 검증</h3><p class="subhead">앞선 80% 학습 → 이후 20% 평가 · 예측기간만큼 공백 구간</p></div></div><div id="valNumbers" class="grid-metrics" style="margin:4px 0 13px;grid-template-columns:repeat(3,1fr)"></div><div class="chartbox short" id="testChart"></div><div class="quality" id="quality"></div></article></section>
-<section class="panel" style="margin-bottom:20px"><div class="panel-head"><div><h3>모든 조건 상세 비교</h3><p class="subhead">AUC가 높아도 희소 사건의 실제 예측 확률이 정확하다는 뜻은 아닙니다.</p></div><button class="btn" id="svgBtn">가격 그래프 SVG ↓</button></div><div class="table-wrap"><table class="stat-table"><thead><tr><th>급락 조건</th><th>로지스틱</th><th>유사국면</th><th>기본 발생률</th><th>검증 ROC-AUC</th><th>검증 PR-AUC</th><th>검증 급락수/표본</th></tr></thead><tbody id="detailsBody"></tbody></table></div></section>
+<section class="panel" style="margin-bottom:20px"><div class="panel-head"><div><h3>모든 조건 상세 비교</h3><p class="subhead">AUC가 높아도 희소 사건의 실제 예측 확률이 정확하다는 뜻은 아닙니다.</p></div><button class="btn" id="svgBtn">가격 그래프 SVG ↓</button></div><div class="table-wrap"><table class="stat-table"><thead><tr><th>급락 조건</th><th>경로 시뮬레이션</th><th>로지스틱</th><th>유사국면</th><th>기본 발생률</th><th>검증 ROC-AUC</th><th>검증 PR-AUC</th><th>검증 급락수/표본</th></tr></thead><tbody id="detailsBody"></tbody></table></div></section>
 </div></section>
-<section id="methodology" class="about"><article class="panel"><h3>어떻게 계산하나요?</h3><p>기준일 <b>t</b>의 종가에서 <b>향후 5·21·63거래일의 최저 종가</b>가 -10% 또는 -20% 이하인지를 계산합니다. 종가에 국한하므로 장중 저점은 포착하지 못합니다.</p><p><b>과거 발생률</b>: 모든 과거 기준일 중 하락 조건을 만족한 비율. <b>유사국면</b>: 20일 변동성, 최근 수익률, 고점 대비 하락, 선택적으로 VIX·크레딧 ETF 상대강도가 비슷한 과거 기준일 120개 내외의 빈도를 완만히 보정한 값입니다.</p><p><b>로지스틱 모델</b>: 같은 특징을 사용한 정규화 로지스틱 회귀(연구용 예제). 목표 기간이 끝나지 않은 최근 관측치는 학습에서 제외합니다. 검증은 시간순 분할 + 시계열 공백 구간을 사용합니다. <b>XGBoost 훈련 모델이 아닙니다.</b></p></article><article class="panel"><h3>데이터와 해석상 주의</h3><p>기본 자료는 접속할 때마다 <a href="https://finance.yahoo.com/" target="_blank" rel="noopener">Yahoo Finance</a> 비공식 일별 가격 API에서 조회합니다. 브라우저 접근을 위해 <a href="https://cors.dev/guides/yahoo-finance-api-cors" target="_blank" rel="noopener">외부 CORS 중계</a>를 사용하며 지연·차단될 수 있습니다. <b>마지막 거래일이 5일 넘게 오래되었거나 가져오지 못하면 현재 급락 위험을 표시하지 않습니다.</b> 이 화면은 실시간 시세 서비스나 검증된 투자 예측 서비스가 아닙니다.</p><p>VIX는 시세의 변동성 기대를 나타내며, HYG/LQD 상대성과는 크레딧 여건의 <b>대용 지표</b>이지 실제 신용스프레드가 아닙니다. 단순 수익률·변동성 지표만으로 옵션의 위험중립 왜도나 정밀한 시장충격을 분석할 수 없습니다.</p><p><b>참고 연구:</b> <a href="https://doi.org/10.1016/j.irfa.2026.105252" target="_blank" rel="noopener">Regime vs. shock (2026)</a> 및 <a href="https://ajofa.org/index.php/ojs/article/view/15" target="_blank" rel="noopener">Fear, Policy Noise and Market Pain (2026)</a>. 이 페이지의 결과는 논문 모델을 재현한 공식 예측치가 아닙니다.</p><ul><li>표본의 겹침·구조적 변화·후행 데이터를 무시하면 확률이 과신될 수 있습니다.</li><li>검증 구간에 급락이 충분하지 않으면 AUC·PR-AUC를 신뢰하기 어렵습니다.</li><li>개별 종목 CSV를 가져와도 내부 정보·뉴스·옵션 데이터는 자동 반영되지 않습니다.</li></ul></article></section>
+<section id="methodology" class="about"><article class="panel"><h3>어떻게 계산하나요?</h3><p>기준일 <b>t</b>의 종가에서 <b>향후 5·21·63거래일의 최저 종가</b>가 -10% 또는 -20% 이하인지를 계산합니다. 종가에 국한하므로 장중 저점은 포착하지 못합니다.</p><p><b>과거 발생률</b>: 모든 과거 기준일 중 하락 조건을 만족한 비율. <b>유사국면</b>: 20일 변동성, 최근 수익률, 고점 대비 하락, 선택적으로 VIX·크레딧 ETF 상대강도가 비슷한 과거 기준일 120개 내외의 빈도를 완만히 보정한 값입니다.</p><p><b>경로 시뮬레이션(기본값)</b>: 최대 20년 이력의 5거래일 수익률 블록을 과거 변동성·모멘텀과 현재 국면 유사도로 가중 재추출하고 현재 변동성을 부분 반영해 향후 63거래일 12,000개 가격 경로를 만듭니다. 1주·1개월·3개월의 종료 시점 가격분포와 기간 내 -10%·-20% 도달 횟수를 집계합니다. 과거에 없던 충격, 구조적 변화, 시장 개장 전 가격은 반영하지 못하며 변동성 범위도 보장하지 않습니다.</p><p><b>로지스틱 모델</b>: 같은 특징을 사용한 정규화 로지스틱 회귀(연구용 예제). 목표 기간이 끝나지 않은 최근 관측치는 학습에서 제외합니다. 검증은 시간순 분할 + 시계열 공백 구간을 사용합니다. <b>XGBoost 훈련 모델이 아닙니다.</b></p></article><article class="panel"><h3>데이터와 해석상 주의</h3><p>기본 가격은 <a href="https://finance.yahoo.com/" target="_blank" rel="noopener">Yahoo Finance</a> 비공식 차트 API에서 접속 시 가져옵니다. 브라우저 접근을 위한 <a href="https://cors.dev/guides/yahoo-finance-api-cors" target="_blank" rel="noopener">외부 CORS 중계</a>를 거치며, 해당 서비스가 차단되거나 지연되면 자동 갱신이 실패할 수 있습니다. 실패하면 예전 데이터를 현재 시세인 것처럼 표시하지 않습니다. 주가는 지연 시세 또는 해당 시장의 마지막 거래일 종가일 수 있고, 최대 20년 이력을 사용하지만 시장 상황과 가용 데이터에 따라 과거가 다를 수 있습니다. 현재값은 그 시장의 최신 확정 일별 종가이지 실시간 호가가 아닙니다.</p><p>VIX는 시세의 변동성 기대를 나타내며, HYG/LQD 상대성과는 크레딧 여건의 <b>대용 지표</b>이지 실제 신용스프레드가 아닙니다. 단순 수익률·변동성 지표만으로 옵션의 위험중립 왜도나 정밀한 시장충격을 분석할 수 없습니다.</p><p><b>참고 연구:</b> <a href="https://doi.org/10.1016/j.irfa.2026.105252" target="_blank" rel="noopener">Regime vs. shock (2026)</a> 및 <a href="https://ajofa.org/index.php/ojs/article/view/15" target="_blank" rel="noopener">Fear, Policy Noise and Market Pain (2026)</a>. 이 페이지의 결과는 논문 모델을 재현한 공식 예측치가 아닙니다.</p><ul><li>표본의 겹침·구조적 변화·후행 데이터를 무시하면 확률이 과신될 수 있습니다.</li><li>검증 구간에 급락이 충분하지 않으면 AUC·PR-AUC를 신뢰하기 어렵습니다.</li><li>개별 종목 CSV를 가져와도 내부 정보·뉴스·옵션 데이터는 자동 반영되지 않습니다.</li></ul></article></section>
 </main>
-<footer><div class="wrap footerrow"><div>© CrashScope · 금융시장 위험 탐색용 교육/연구 프로토타입 · 투자 자문 아님</div><div><a href="#top">맨 위로 ↑</a> · <a href="https://finance.yahoo.com/" target="_blank" rel="noopener">데이터 출처</a> · <a href="#methodology">방법론</a></div></div></footer>
+<footer><div class="wrap footerrow"><div>© CrashScope · 비공식 Yahoo Finance 시세 · 수급/호가 실시간 스트리밍 아님 · 연구용</div><div><a href="#top">맨 위로 ↑</a> · <a href="https://finance.yahoo.com" target="_blank" rel="noopener">데이터 출처</a> · <a href="#methodology">방법론</a></div></div></footer>
 <script>
 'use strict';
-const SOURCE_URLS=[
- 'https://raw.githubusercontent.com/manisahni/marketdata/main/daily_adjclose.csv',
- 'https://cdn.jsdelivr.net/gh/manisahni/marketdata@main/daily_adjclose.csv'
-];
+// Yahoo의 비공식 chart API는 일반 브라우저에서 CORS를 허용하지 않습니다.
+// 2026년 10월에 공개된 cors.dev 프록시 가이드에 따라 1차 프록시 사용;
+// 중계 서비스가 실패하면 다른 공개 프록시를 시도하되, 이전 날짜 데이터로 대체하지 않습니다.
+const YAHOO_BASE='https://query1.finance.yahoo.com/v8/finance/chart/';
+const MAX_DATA_AGE_DAYS=5;
+const PRESET_TICKERS=['SPY','QQQ','IWM','DIA','TLT','GLD','HYG','LQD','XLK','XLF','XLE','XLV','XLY','XLP','XLI','XLU','XLB','EEM','EFA','AAPL','MSFT','NVDA','AMD','TSLA','AMZN','GOOGL','META','005930.KS','000660.KS','^KS11','^KQ11'];
+const priceCache=new Map();
+let fetchSequence=0;
+async function requestYahooChart(symbol){
+ const dateNow=new Date(),start=Math.floor(Date.UTC(dateNow.getUTCFullYear()-20,dateNow.getUTCMonth(),dateNow.getUTCDate())/1000),end=Math.floor(Date.now()/1000)+172800;
+ const original=YAHOO_BASE+encodeURIComponent(symbol)+'?period1='+start+'&period2='+end+'&interval=1d';
+ const endpoints=['https://proxy.cors.dev/'+original,'https://api.allorigins.win/raw?url='+encodeURIComponent(original)];
+ let lastError;
+ for(const endpoint of endpoints){
+  try{
+   const res=await fetch(endpoint,{credentials:'omit',cache:'no-store',signal:AbortSignal.timeout(11000)});
+   if(!res.ok)throw Error('중계 HTTP '+res.status);
+   const json=await res.json(), chart=json?.chart?.result?.[0];
+   if(!chart||!chart.timestamp?.length)throw Error(json?.chart?.error?.description||'가격 시계열이 없습니다');
+   const q=chart.indicators?.quote?.[0],a=chart.indicators?.adjclose?.[0]?.adjclose;
+   if(!q)throw Error('종가 배열을 읽지 못했습니다');
+   const timezone=chart.meta?.exchangeTimezoneName||'America/New_York',daily=[];
+   for(let i=0;i<chart.timestamp.length;i++){
+    const price=Number(a?.[i]??q.close?.[i]);
+    if(!Number.isFinite(price)||price<=0)continue;
+    const day=new Date(chart.timestamp[i]*1000).toLocaleDateString('sv-SE',{timeZone:timezone});
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(day))continue;
+    daily.push({d:day,p:price});
+   }
+   daily.sort((a,b)=>a.d.localeCompare(b.d));
+   const dedup=[];for(const row of daily){if(dedup.length&&dedup.at(-1).d===row.d)dedup[dedup.length-1]=row;else dedup.push(row)}
+   if(dedup.length<150)throw Error('일별 가격이 150개 미만');
+   return {symbol,rows:dedup,meta:chart.meta||{}};
+  }catch(err){lastError=err;console.warn('외부 가격 중계 실패',endpoint.slice(0,32),symbol,err)}
+ }
+ throw Error(symbol+' 최신 가격을 받지 못했습니다. '+(lastError?.message||'네트워크 접근 오류'));
+}
+function mergeYahoo(data,others=[]){
+ const rowsByDate=new Map();
+ const put=(data,field)=>{for(const r of data.rows){let o=rowsByDate.get(r.d);if(!o){o={d:r.d};rowsByDate.set(r.d,o)}o[field]=r.p}};
+ put(data,data.symbol);
+ for(const v of others)if(v)put(v,v.symbol);
+ return [...rowsByDate.values()].filter(r=>Number.isFinite(r[data.symbol])).sort((a,b)=>a.d.localeCompare(b.d));
+}
 const HORIZONS=[{n:5,name:'1주'},{n:21,name:'1개월'},{n:63,name:'3개월'}],THRESHOLDS=[10,20];
-const ASSET_NAMES={SPY:'S&P 500 ETF · SPY',QQQ:'NASDAQ 100 ETF · QQQ',IWM:'미국 소형주 ETF · IWM',EEM:'신흥국 ETF · EEM',EFA:'선진국 ETF · EFA',XLK:'미국 기술섹터 ETF · XLK',XLF:'미국 금융섹터 ETF · XLF',XLE:'미국 에너지 ETF · XLE',XLV:'미국 헬스케어 ETF · XLV',XLY:'미국 경기소비재 ETF · XLY',XLP:'미국 필수소비재 ETF · XLP',XLI:'미국 산업재 ETF · XLI',XLU:'미국 유틸리티 ETF · XLU',XLB:'미국 소재 ETF · XLB',GLD:'금 ETF · GLD'};
-const state={rows:[],tickers:[],ticker:'SPY',years:'all',mode:'logit',range:'5',t:10,h:21,source:'',stats:{},features:[],series:[],ready:false,volumePrefix:[],featureNames:[]};
+const ASSET_NAMES={SPY:'S&P 500 ETF · SPY',QQQ:'NASDAQ 100 ETF · QQQ',IWM:'미국 소형주 ETF · IWM',EEM:'신흥국 ETF · EEM',EFA:'선진국 ETF · EFA',XLK:'미국 기술섹터 ETF · XLK',XLF:'미국 금융섹터 ETF · XLF',XLE:'미국 에너지 ETF · XLE',XLV:'미국 헬스케어 ETF · XLV',XLY:'미국 경기소비재 ETF · XLY',XLP:'미국 필수소비재 ETF · XLP',XLI:'미국 산업재 ETF · XLI',XLU:'미국 유틸리티 ETF · XLU',XLB:'미국 소재 ETF · XLB',GLD:'금 ETF · GLD',DIA:'다우존스 ETF · DIA',TLT:'미국 장기국채 ETF · TLT',HYG:'하이일드 회사채 ETF · HYG',LQD:'투자등급 회사채 ETF · LQD',AAPL:'애플 · AAPL',MSFT:'마이크로소프트 · MSFT',NVDA:'엔비디아 · NVDA',AMD:'AMD',TSLA:'테슬라 · TSLA',AMZN:'아마존 · AMZN',GOOGL:'알파벳 · GOOGL',META:'메타 · META','005930.KS':'삼성전자 · 005930.KS','000660.KS':'SK하이닉스 · 000660.KS','^KS11':'코스피 · ^KS11','^KQ11':'코스닥 · ^KQ11'};
+const state={rows:[],tickers:[],ticker:'SPY',years:'all',mode:'path',range:'5',t:10,h:21,source:'',stats:{},features:[],series:[],ready:false,volumePrefix:[],featureNames:[],fresh:false,quoteMeta:null,forecast:null};
 const $=id=>document.getElementById(id);
 const safe=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pct=x=>Number.isFinite(x)?(x*100).toFixed(x<0.01?2:1)+'%':'—';
@@ -66,16 +115,47 @@ function parseCSV(txt,fileName='market-data.csv'){
  return {rows:dedup,source:isSingle?`사용자 CSV · ${fileName}`:'사용자 CSV · 복수 종목'};
 }
 function setAlert(str,isError=false){const el=$('alert');if(!str){el.className='alert';el.textContent='';return}el.textContent=str;el.className='alert show'+(isError?' error':'')}
-function fillTickers(){const counts={};for(const r of state.rows)for(const k in r)if(k!=='d'&&k!=='^VIX'&&k!=='^VIX3M'&&k!=='^IRX'&&Number.isFinite(r[k])&&r[k]>0)counts[k]=(counts[k]||0)+1;const all=Object.keys(counts).filter(k=>counts[k]>=95);const preferred=Object.keys(ASSET_NAMES).filter(k=>all.includes(k));state.tickers=[...preferred,...all.filter(k=>!preferred.includes(k))];if(!state.tickers.length)throw Error('분석 가능한 종목 가격을 찾지 못했습니다.');if(!state.tickers.includes(state.ticker))state.ticker=state.tickers[0];$('tickerSelect').innerHTML=state.tickers.map(k=>`<option value="${safe(k)}">${safe(ASSET_NAMES[k]||k)}</option>`).join('');$('tickerSelect').value=state.ticker}
-function agoDays(d){const a=new Date(d+'T00:00:00Z'),b=new Date();return Math.max(0,Math.floor((b-a)/86400000))}
-async function loadPublic(){setAlert('');$('loading').classList.remove('hidden');$('content').classList.add('hidden');state.ready=false;let err;
- for(const url of SOURCE_URLS){try{const resp=await fetch(url,{cache:'no-store',signal:AbortSignal.timeout(16000)});if(!resp.ok)throw Error('HTTP '+resp.status);const txt=await resp.text();if(!txt.startsWith('Date,')&&!txt.startsWith('date,'))throw Error('가격 CSV 응답이 아닙니다.');const {rows}=parseCSV(txt,'market-data.csv');if(!rows.some(r=>r.SPY&&r['^VIX']))throw Error('데이터 컬럼이 예상과 다릅니다.');state.rows=rows;state.source='ETF 공개 데이터 · GitHub 원본';state.ticker='SPY';onLoaded();return}catch(e){err=e;console.warn('데이터 로드 실패',url,e)}}
- $('loading').classList.add('hidden');setAlert('공개 데이터를 읽어오지 못했습니다. 브라우저 연결·외부 데이터 접근을 확인하거나 CSV 가져오기를 이용하세요. 샘플값을 지어내어 표시하지 않습니다. ('+(err?.message||'통신 오류')+')',true);
- $('dataInfo').innerHTML='<span class="muted">연결되지 않음 · CSV 사용 가능</span>';
+function fillTickers(){
+ const values=state.source.startsWith('사용자 CSV')?[...new Set(state.rows.flatMap(r=>Object.keys(r)).filter(k=>k!=='d'&&k!=='^VIX'))]:PRESET_TICKERS;
+ if(!values.includes(state.ticker))values.unshift(state.ticker);
+ state.tickers=values;
+ $('tickerSelect').innerHTML=values.map(k=>`<option value="${safe(k)}">${safe(ASSET_NAMES[k]||k)}</option>`).join('');
+ $('tickerSelect').value=state.ticker;
 }
-function onLoaded(){fillTickers();$('loading').classList.add('hidden');$('content').classList.remove('hidden');$('exportBtn').disabled=false;state.ready=true;const latest=state.rows[state.rows.length-1].d;const days=agoDays(latest);$('dataInfo').innerHTML=`<b>${safe(latest)}</b><br><span class="muted">${safe(state.source)}</span>`;
- if(days>=7)setAlert(`주의: 데이터 기준일 ${latest}은 오늘로부터 약 ${days}일 전입니다. 여기 표시되는 '현재 위험'은 그 기준일의 추정치이며, 오늘 시장 위험을 나타내지 않습니다. 최신 CSV로 갱신하세요.`);else setAlert('');
- renderAll()}
+function agoDays(d){const a=new Date(d+'T00:00:00Z'),b=new Date();return Math.max(0,Math.floor((b-a)/86400000))}
+async function loadPublic(symbol=state.ticker){
+ const sequence=++fetchSequence;
+ setAlert('');$('loading').classList.remove('hidden');$('content').classList.add('hidden');state.ready=false;$('reloadBtn').disabled=true;$('symbolBtn').disabled=true;
+ try{
+  symbol=String(symbol||'SPY').toUpperCase().trim();
+  if(!/^[A-Z0-9^.=\-]{1,24}$/.test(symbol))throw Error('유효하지 않은 종목코드입니다.');
+  let data=await requestYahooChart(symbol);
+  if(sequence!==fetchSequence)return;
+  const age=agoDays(data.rows.at(-1).d);
+  if(age>MAX_DATA_AGE_DAYS)throw Error(`최신 종가가 ${data.rows.at(-1).d}에 멈춰 있습니다 (${age}일 전). 오래된 가격으로 현재 급락 확률을 계산하지 않습니다.`);
+  const additional=await Promise.allSettled(['^VIX','HYG','LQD'].filter(k=>k!==symbol).map(k=>requestYahooChart(k)));
+  if(sequence!==fetchSequence)return;
+  const others=additional.map(r=>r.status==='fulfilled'?r.value:null);
+  if(additional.some(r=>r.status==='rejected'))console.warn('일부 보조 시세 누락: 보조 지표 없이 분석합니다');
+  priceCache.set(symbol,{data,others});
+  state.rows=mergeYahoo(data,others);state.source='Yahoo Finance 최신 일별 가격 · cors.dev 중계';state.ticker=symbol;state.quoteMeta=data.meta;
+  onLoaded();
+ }catch(err){if(sequence!==fetchSequence)return;
+  $('loading').classList.add('hidden');$('content').classList.add('hidden');state.fresh=false;
+  $('dataInfo').innerHTML='<span style="color:#ff8497">가격 연결 실패 — 현재 예측치 표시 중단</span>';
+  setAlert('최신 가격을 가져오지 못했습니다. 오래된 자료를 현재 확률인 것처럼 표시하지 않습니다. ‘최신 시세 갱신’을 다시 누르거나 API 접근이 가능한 연결을 이용하세요. 오류: '+err.message,true);
+ }finally{if(sequence===fetchSequence){$('reloadBtn').disabled=false;$('symbolBtn').disabled=false}}
+}
+function onLoaded(){
+ fillTickers();$('loading').classList.add('hidden');$('content').classList.remove('hidden');$('exportBtn').disabled=false;state.ready=true;
+ const latest=state.rows.filter(r=>Number.isFinite(r[state.ticker])).at(-1)?.d||'';
+ const days=agoDays(latest);state.fresh=days<=MAX_DATA_AGE_DAYS;
+ const lastQuote=state.quoteMeta?.regularMarketTime?new Date(state.quoteMeta.regularMarketTime*1000).toLocaleString('ko-KR',{timeZone:'America/New_York',hour12:false}):null;
+ $('dataInfo').innerHTML=`<b style="color:${state.fresh?'#68e4b5':'#ff8497'}">${safe(latest)} (${state.fresh?'최근 거래일':'오래된 데이터'})</b><br><span class="muted">${safe(state.source)}${lastQuote?'<br>미국 동부 시세시각 '+safe(lastQuote):''}</span>`;
+ if(!state.fresh)setAlert(`데이터가 ${days}일 전(${latest})에 멈춰 있어 현재 모델 확률을 차단했습니다. 역사적 그래프만 확인하세요.`,true);
+ else setAlert('현재 표시값은 '+latest+' 일별 종가에 기반한 연구용 추정치입니다. 장중 실시간 스트리밍이 아니며 실제 급락 확률의 신뢰성이 입증된 모델은 아닙니다.');
+ renderAll();
+}
 function buildSeries(){const p=state.rows.filter(r=>Number.isFinite(r[state.ticker])&&r[state.ticker]>0);if(p.length<95)throw Error('이 종목의 유효 가격 자료가 95일 미만입니다.');let out=p.map((r,i)=>({d:r.d,p:r[state.ticker],vix:P(r['^VIX']),hyg:P(r.HYG),lqd:P(r.LQD),i,has:false}));let last=out[out.length-1];let hasVix=Number.isFinite(last.vix)&&out.filter(x=>Number.isFinite(x.vix)).length>400;let hasCredit=Number.isFinite(last.hyg)&&Number.isFinite(last.lqd)&&out.filter(x=>Number.isFinite(x.hyg)&&Number.isFinite(x.lqd)).length>400;
  const keys=['20일 연율화 변동성','21일 수익률','63일 수익률','126일 최고점 대비','VIX','HYG/LQD 스트레스'];state.featureNames=keys.slice(0,4).concat(hasVix?[keys[4]]:[],hasCredit?[keys[5]]:[]);
  for(let i=0;i<out.length;i++){const r=out[i];if(i<126)continue;const ret=[];for(let j=i-19;j<=i;j++)ret.push(Math.log(out[j].p/out[j-1].p));const avg=ret.reduce((a,b)=>a+b,0)/ret.length;const sigma=Math.sqrt(ret.reduce((a,b)=>a+(b-avg)**2,0)/(ret.length-1))*Math.sqrt(252)*100;let hi=-Infinity;for(let k=i-125;k<=i;k++)hi=Math.max(hi,out[k].p);const x=[sigma,(r.p/out[i-21].p-1)*100,(r.p/out[i-63].p-1)*100,(r.p/hi-1)*100];if(hasVix)x.push(r.vix);if(hasCredit){const a=out[i-21];x.push((Number.isFinite(a.hyg)&&Number.isFinite(a.lqd))?-100*((r.hyg/r.lqd)/(a.hyg/a.lqd)-1):NaN)}r.x=x;r.vol=sigma;r.dd=(r.p/hi-1)*100;r.has=x.every(Number.isFinite)}
@@ -97,15 +177,91 @@ function evaluate(t,h){const usable=state.features.filter(r=>Number.isFinite(r['
  const indices=[];const gap=Math.max(5,Math.round(h/3));for(const q of feats){if(indices.every(i=>Math.abs(i-q.r.i)>=gap)){indices.push(q.r.i);analogEvents+=y(q.r);if(indices.length>=120)break}}
  analogN=indices.length;analog=(analogEvents+30*base)/(analogN+30)}
  return {base,analog,model,auc:roc,ap:pr,n:test.length,pos:posTest,trainN:train.length,trainPos:train.reduce((s,r)=>s+y(r),0),allN:all,allPos:posAll,analogN,analogEvents,test:test.map((r,i)=>({d:r.d,p:testP[i],y:testYs[i]})),last:current.d,quality:posTest>=10&&train.reduce((s,r)=>s+y(r),0)>=20?'일반':'희소 사건 / 검증 부족'}}
-function compute(){buildSeries();state.stats={};for(const t of THRESHOLDS)for(const h of HORIZONS){state.stats[sid(t,h.n)]=evaluate(t,h.n)}}
-function selectedVal(s){return s[state.mode]}
-function modelName(){return {logit:'로지스틱 모델',analog:'유사국면 빈도',base:'과거 발생률'}[state.mode]}
-function renderAll(){if(!state.ready)return;const old=state.t+'_'+state.h;try{compute()}catch(e){console.error(e);setAlert('분석 중 오류: '+e.message,true);return}renderMetrics();renderSix();renderPrice();renderBars();renderVol();renderValidation();renderTable();$('selectedModelLabel').textContent=modelName();}
+// Conditional 5-day moving-block bootstrap. Purely experimental, reproducible by symbol/date.
+// All six drop events and terminal-price ranges use the SAME simulated paths.
+function seededRng(seed){let n=seed>>>0;return function(){n=(n+0x6D2B79F5)|0;let z=n;z=Math.imul(z^(z>>>15),z|1);z^=z+Math.imul(z^(z>>>7),z|61);return ((z^(z>>>14))>>>0)/4294967296}}
+function qSorted(sorted,p){const x=(sorted.length-1)*p,i=Math.floor(x),w=x-i;return sorted[i]*(1-w)+(sorted[Math.min(sorted.length-1,i+1)])*w}
+function getPriceText(x){if(!Number.isFinite(x))return '—';const kr=state.ticker.endsWith('.KS')||state.ticker.endsWith('.KQ');const index=state.ticker.startsWith('^');return (kr?'₩':index?'':'$')+x.toLocaleString('en-US',{minimumFractionDigits:kr||index?0:2,maximumFractionDigits:kr||index?0:2})}
+function simulateFuturePaths(){
+ const all=state.series,latest=all.at(-1),MAX=63,COUNT=12000,BLOCK=5;
+ if(!state.fresh||!latest?.has||all.length<290)return null;
+ const cutoff=state.years==='all'?'0000-00-00':String(Number(latest.d.slice(0,4))-Number(state.years))+'-'+latest.d.slice(5);
+ const valid=[];const cv=latest.vol/100/Math.sqrt(252),cm=latest.x[1];
+ if(!(cv>0))return null;
+ let weightSum=0;
+ for(let i=127;i+BLOCK<all.length;i++){
+   const past=all[i-1];if(past.d<cutoff||!past?.has)continue;
+   let ok=true;for(let k=0;k<BLOCK;k++)if(!Number.isFinite(all[i+k]?.p)||!Number.isFinite(all[i+k-1]?.p))ok=false;
+   if(!ok)continue;
+   const hv=past.vol/100/Math.sqrt(252);
+   if(!Number.isFinite(hv)||hv<=0)continue;
+   const volDist=Math.log(hv/cv)/.72;
+   const momDist=(past.x[1]-cm)/Math.max(7,cv*Math.sqrt(21)*125);
+   const weight=.18+2.2*Math.exp(-.5*(volDist*volDist+momDist*momDist));
+   weightSum+=weight;
+   valid.push({i,cum:weightSum,scale:clamp(.25+.75*cv/hv,.58,1.8)});
+ }
+ if(valid.length<130||weightSum<=0)return null;
+ const dailyRet=new Float64Array(all.length);let historicalMean=0,returnCount=0;
+ for(let i=1;i<all.length;i++){dailyRet[i]=Math.log(all[i].p/all[i-1].p);if(i>=127&&all[i].d>=cutoff){historicalMean+=dailyRet[i];returnCount++}}
+ historicalMean/=Math.max(returnCount,1);
+ const drift252=all.length>253?Math.log(latest.p/all[all.length-253].p)/252:historicalMean;
+ const drift21=Math.log(latest.p/all[all.length-22].p)/21;
+ const targetDrift=clamp(.85*drift252+.15*drift21,-.0015,.0025);
+ // Shrink sampled historical drift halfway toward the long-term/current blend.
+ const driftAdjustment=clamp(.45*(targetDrift-historicalMean),-.0015,.0015);
+ let seed=0x42f0a901;for(const ch of state.ticker+'|'+latest.d+'|'+state.years)seed=Math.imul(seed^ch.charCodeAt(0),16777619);
+ const rand=seededRng(seed),spot=latest.p;
+ const samples=Array.from({length:MAX+1},()=>new Float64Array(COUNT));
+ const stats={5:{down:0,touch10:0,touch20:0},21:{down:0,touch10:0,touch20:0},63:{down:0,touch10:0,touch20:0}};
+ function pick(){const r=rand()*weightSum;let lo=0,hi=valid.length-1;while(lo<hi){const mid=(lo+hi)>>1;if(valid[mid].cum>=r)hi=mid;else lo=mid+1}return valid[lo]}
+ for(let s=0;s<COUNT;s++){
+   let price=spot,minP=spot,day=0;samples[0][s]=spot;
+   while(day<MAX){const block=pick();for(let k=0;k<BLOCK&&day<MAX;k++){
+      const ret=clamp(dailyRet[block.i+k]*block.scale+driftAdjustment,-.31,.31);
+      price*=Math.exp(ret);minP=Math.min(minP,price);day++;
+      samples[day][s]=price;
+      if(stats[day]){const z=stats[day];if(price<spot)z.down++;if(minP<=spot*.90+1e-9)z.touch10++;if(minP<=spot*.80+1e-9)z.touch20++}
+   }}
+ }
+ const bands=[];for(let day=0;day<=MAX;day++){const vals=samples[day];vals.sort();bands.push({day,q05:qSorted(vals,.05),q10:qSorted(vals,.10),q25:qSorted(vals,.25),median:qSorted(vals,.50),q75:qSorted(vals,.75),q90:qSorted(vals,.90),q95:qSorted(vals,.95)})}
+ const byH={};for(const h of HORIZONS){const z=stats[h.n],v=bands[h.n];byH[h.n]={...v,down:z.down/COUNT,touch10:z.touch10/COUNT,touch20:z.touch20/COUNT}}
+ return {asof:latest.d,spot,byH,bands,count:COUNT,blocks:valid.length,driftAdjustment,vol:latest.vol,method:'5일 수익률 블록 · 12,000회'};
+}
+function renderForecast(){
+ const head=$('forecastAsOf'),root=$('forecastContents'),f=state.forecast;
+ if(!state.fresh||!f){head.textContent='최신 유효 가격 / 분석 표본 확인 필요';root.innerHTML='<div class="forecast-stale">최신 종가가 확인되지 않았거나 이력이 부족해 현재 예측을 표시할 수 없습니다. 종목을 바꾸거나 새 데이터를 가져오세요.</div>';return}
+ head.textContent=`${safe(state.ticker)} · 기준가 ${getPriceText(f.spot)} · ${f.asof} 마감 기준 · 5 / 21 / 63거래일`;
+ const cards=HORIZONS.map(h=>{const a=f.byH[h.n];return `<div class="forecast-card"><span class="horizon">향후 ${h.name} · ${h.n}거래일</span><span class="down">${pct(a.down)}</span><span class="detail">기간 말 기준가 미만으로 <b>하락할 확률</b><br>예상 중앙값 <b>${getPriceText(a.median)}</b> (${num((a.median/f.spot-1)*100,1)}%)</span><div class="sub">80% 예상 가격구간<br><b>${getPriceText(a.q10)} ~ ${getPriceText(a.q90)}</b></div></div>`}).join('');
+ const table=HORIZONS.map(h=>{const x=f.byH[h.n];return `<tr><td><b>${h.name}</b></td><td>${pct(x.down)}</td><td>${getPriceText(x.median)}</td><td>${getPriceText(x.q10)} ~ ${getPriceText(x.q90)}</td><td>${getPriceText(x.q05)} ~ ${getPriceText(x.q95)}</td><td>${pct(x.touch10)}</td><td>${pct(x.touch20)}</td></tr>`}).join('');
+ root.innerHTML=`<div class="forecast-grid">${cards}</div><div class="forecast-legend"><span><i class="key" style="background:#204964"></i>90% 가격 예상 구간</span><span><i class="key" style="background:#246884"></i>80% 가격 예상 구간</span><span><i class="key" style="background:#66e4b5;height:3px"></i>예상 중앙값</span><span><i class="key" style="background:#ff8497;height:3px"></i>-10%/-20% 가격</span></div><div class="forecast-chart" id="forecastChart"></div><div class="table-wrap"><table class="forecast-table"><thead><tr><th>기간</th><th>하락 확률</th><th>가격 중앙값</th><th>80% 예상 범위</th><th>90% 예상 범위</th><th>-10% 도달</th><th>-20% 도달</th></tr></thead><tbody>${table}</tbody></table></div><div class="forecast-note">기준 종가 대비 가격 기준선: <b>-10% ${getPriceText(f.spot*.90)}</b> · <b>-20% ${getPriceText(f.spot*.80)}</b> · 과거 5일 블록 ${f.blocks.toLocaleString()}개 중 현재 시장 국면과 유사한 구간에 더 큰 가중치. 종료일과 무관하게 경로 중 먼저 하락 목표를 건드리면 “도달”로 집계합니다.</div>`;
+ renderForecastChart();
+}
+function renderForecastChart(){
+ const f=state.forecast,root=$('forecastChart');if(!f||!root)return;
+ const w=1080,h=350,l=51,r=17,top=20,b=35,spot=f.spot,rows=f.bands;
+ const lobs=rows.map(v=>v.q05/spot*100),ups=rows.map(v=>v.q95/spot*100);
+ const min=Math.max(30,Math.floor((Math.min(80,...lobs)-4)/5)*5),max=Math.ceil((Math.max(100,...ups)+3)/5)*5;
+ const X=d=>l+(w-r-l)*d/63,Y=v=>top+(h-b-top)*(1-(v-min)/(max-min));
+ let svg='';for(let j=0;j<6;j++){const v=min+(max-min)*j/5,y=Y(v);svg+=`<line x1="${l}" x2="${w-r}" y1="${y}" y2="${y}" stroke="#304760" stroke-width="1" stroke-dasharray="3 5"/><text x="${l-8}" y="${y+4}" fill="#92acc7" font-size="12" text-anchor="end">${num(v,0)}%</text>`}
+ for(const dd of [5,21,63]){const x=X(dd);svg+=`<line x1="${x}" x2="${x}" y1="${top}" y2="${h-b}" stroke="#40556d" stroke-dasharray="4 4"/><text x="${x}" y="${h-8}" fill="#a2b8d2" font-size="12" text-anchor="${dd===63?'end':'middle'}">${hname(dd)}</text>`}
+ function line(key){return rows.map((v,i)=>(i?'L':'M')+X(i).toFixed(2)+' '+Y(v[key]/spot*100).toFixed(2)).join(' ')}
+ function area(high,low){return rows.map((v,i)=>(i?'L':'M')+X(i).toFixed(2)+' '+Y(v[high]/spot*100).toFixed(2)).join(' ')+' '+rows.slice().reverse().map(v=>'L'+X(v.day).toFixed(2)+' '+Y(v[low]/spot*100).toFixed(2)).join(' ')+'Z'}
+ svg+=`<path d="${area('q95','q05')}" fill="#213e58" opacity=".95"/><path d="${area('q90','q10')}" fill="#286b86" opacity=".75"/><path d="${area('q75','q25')}" fill="#398fac" opacity=".45"/>`;
+ for(const lvl of [100,90,80]){const y=Y(lvl);svg+=`<line x1="${l}" x2="${w-r}" y1="${y}" y2="${y}" stroke="${lvl===100?'#cbddec':'#ff8798'}" stroke-width="${lvl===100?'1':'1.4'}" stroke-dasharray="${lvl===100?'3 7':'6 6'}" opacity="${lvl===100?.9:.88}"/><text x="${w-r-4}" y="${y-5}" text-anchor="end" fill="${lvl===100?'#c5d6e9':'#f7acb6'}" font-size="11">${lvl===100?'기준가':(lvl-100)+'%'}</text>`}
+ svg+=`<path d="${line('median')}" fill="none" stroke="#67e5b4" stroke-width="3" stroke-linejoin="round"/>`;
+ for(const dd of [5,21,63]){const z=rows[dd],cx=X(dd),cy=Y(z.median/spot*100);svg+=`<circle cx="${cx}" cy="${cy}" r="4" stroke="#09202a" stroke-width="2" fill="#66e4b5"><title>${hname(dd)} 가격 중앙값: ${getPriceText(z.median)} · 80% 구간 ${getPriceText(z.q10)}~${getPriceText(z.q90)}</title></circle>`}
+ root.innerHTML=`<svg role="img" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-label="향후 1주, 1개월, 3개월의 경로 시뮬레이션 가격분포 80%와 90% 예상 범위">${svg}</svg>`;
+}
+function compute(){buildSeries();state.forecast=simulateFuturePaths();state.stats={};for(const t of THRESHOLDS)for(const h of HORIZONS){const s=evaluate(t,h.n);const f=state.forecast?.byH[h.n];s.path=f?(t===10?f.touch10:f.touch20):NaN;state.stats[sid(t,h.n)]=s}}
+function selectedVal(s){return state.fresh?s[state.mode]:NaN}
+function modelName(){return {path:'경로 시뮬레이션',logit:'로지스틱 모델',analog:'유사국면 빈도',base:'과거 발생률'}[state.mode]}
+function renderAll(){if(!state.ready)return;const old=state.t+'_'+state.h;try{compute()}catch(e){console.error(e);setAlert('분석 중 오류: '+e.message,true);return}renderMetrics();renderForecast();renderSix();renderPrice();renderBars();renderVol();renderValidation();renderTable();$('selectedModelLabel').textContent=modelName();}
 function renderMetrics(){const ser=state.series,l=ser[ser.length-1],one=ser.length>21?ser[ser.length-22]:null,m=state.stats[sid(state.t,state.h)];const stats=[
  {name:'기준 종가',value:typeof l.p==='number'?l.p.toLocaleString('en-US',{maximumFractionDigits:2}):'—',more:`${safe(state.ticker)} · ${l.d}`},
  {name:'최근 1개월 수익률',value:one?pct(l.p/one.p-1):'—',more:'21거래일 기준',color:one&&l.p<one.p?'warn':''},
  {name:'20일 실현변동성',value:Number.isFinite(l.vol)?num(l.vol)+'%':'—',more:'일별 수익률 · 연율화'},
- {name:'현재 선택 시나리오',value:pct(selectedVal(m)),more:`${state.t}% 하락 · ${hname(state.h)} · ${modelName()}`,color:'small'}
+ {name:state.fresh?'최근 거래일 선택 시나리오':'현재 확률 표시 중단',value:pct(selectedVal(m)),more:`${state.t}% 하락 · ${hname(state.h)} · ${modelName()}`,color:'small'}
  ];$('metrics').innerHTML=stats.map(v=>`<div class="metric"><span>${v.name}</span><strong class="${v.color||''}">${v.value}</strong><small>${v.more}</small></div>`).join('')}
 function renderSix(){const arr=[];for(const t of THRESHOLDS)for(const h of HORIZONS){const s=state.stats[sid(t,h.n)],active=state.t===t&&state.h===h,v=selectedVal(s);arr.push(`<button type="button" class="risk ${active?'active':''} ${!Number.isFinite(v)?'invalid':''}" data-t="${t}" data-h="${h.n}" aria-pressed="${active}"><div class="risk-top"><span>-${t}% 급락</span><span class="pill ${t===20?'hard':''}">${h.name} · ${h.n}거래일</span></div><div class="risk-main"><b>${pct(v)}</b><small>${safe(modelName())}</small></div><div class="mini-bar"><div style="width:${clamp((v||0)*100,0,100)}%"></div></div><div class="risk-sub"><span>과거 <strong>${pct(s.base)}</strong></span><span>유사 국면 <strong>${pct(s.analog)}</strong></span></div></button>`)}$('scenarioCards').innerHTML=arr.join('');$('scenarioCards').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{state.t=Number(b.dataset.t);state.h=Number(b.dataset.h);renderMetrics();renderSix();renderPrice();renderBars();renderValidation();renderTable()}))}
 function svgWrap(inner,w,h,title='차트'){return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${safe(title)}" preserveAspectRatio="none">${inner}</svg>`}
@@ -130,131 +286,11 @@ function renderVol(){const root=$('volChart'),all=state.series;const start=Math.
  for(let i=0;i<4;i++){const j=Math.round(i*(data.length-1)/3);inner+=`<text class="axis" x="${X(j)}" y="${h-7}" text-anchor="${i===0?'start':i===3?'end':'middle'}">${data[j].d.slice(0,7)}</text>`}root.innerHTML=svgWrap(inner,w,h,'20일 변동성과 VIX 추이')}
 function renderValidation(){const s=state.stats[sid(state.t,state.h)];$('valHeading').textContent=`검증 · -${state.t}% / ${hname(state.h)}`;const t=s.n||0,has=s.pos>=3;const data=[{name:'ROC-AUC',val:has?num(s.auc,3):'—',more:'무작위 기준 0.5'},{name:'PR-AUC',val:has?num(s.ap,3):'—',more:`검증 기저 ${pct(t?s.pos/t:NaN)}`},{name:'급락 사례',val:`${s.pos||0} / ${t}`,more:'검증 기간 관측'}];$('valNumbers').innerHTML=data.map(q=>`<div class="metric" style="min-height:85px;padding:9px 11px"><span>${q.name}</span><strong style="font-size:20px">${q.val}</strong><small>${q.more}</small></div>`).join('');const root=$('testChart'),r=s.test||[];if(r.length<5||!Number.isFinite(r[0].p)){root.innerHTML='<div class="placeholder">시계열 검증 표본이 충분하지 않습니다.</div>'}else{const pts=dataPoints(r,420),w=820,h=230,l=45,rr=11,top=20,b=32,max=Math.max(2,...pts.map(q=>q.p*100))*1.2,XX=i=>l+(w-l-rr)*i/(pts.length-1),YY=v=>top+(h-b-top)*(1-v/max);let svg='';for(let i=0;i<4;i++){const y=top+(h-b-top)*i/3;svg+=`<line class="gridline" x1="${l}" x2="${w-rr}" y1="${y}" y2="${y}"/><text class="axis" x="${l-7}" y="${y+4}" text-anchor="end">${num(max*(1-i/3),1)}%</text>`}svg+=`<path d="${pathFor(pts,(q,i)=>[XX(i),YY(q.p*100)])}" fill="none" stroke="#65c9ff" stroke-width="2.1"/>`;for(let i=0;i<pts.length;i++)if(pts[i].y)svg+=`<rect x="${XX(i)-1.1}" y="${h-b+1}" width="2.4" height="8" fill="#ff8497" opacity=".92"/>`;for(let i=0;i<3;i++){const j=Math.round(i*(pts.length-1)/2);svg+=`<text class="axis" x="${XX(j)}" y="${h-6}" text-anchor="${i===0?'start':i===2?'end':'middle'}">${pts[j].d.slice(0,7)}</text>`}root.innerHTML=svgWrap(svg,w,h,'검증 기간 예측 확률과 실제 급락 시작일')}
  $('quality').innerHTML=`<span class="point"></span><b>검증 해석:</b> ${s.pos<10?'급락 사례가 10건 미만입니다. 표본이 적으므로 AUC와 확률값을 신뢰하기 어렵습니다.':'단일 80/20 시간순 홀드아웃 결과로, 반복적인 워크포워드 검증은 아닙니다.'} 학습 ${s.trainN||0}일(급락 ${s.trainPos||0}건), 검증 ${s.n||0}일(급락 ${s.pos||0}건). 겹치는 미래 구간 때문에 급락 건수는 독립 사건 수가 아닙니다.`}
-function renderTable(){let html='';for(const t of THRESHOLDS)for(const h of HORIZONS){const s=state.stats[sid(t,h.n)];html+=`<tr class="${state.t===t&&state.h===h.n?'selected':''}" data-t="${t}" data-h="${h.n}"><td><strong>-${t}% / ${h.name}</strong></td><td>${pct(s.model)}</td><td>${pct(s.analog)} <small>(${s.analogEvents||0}/${s.analogN||0})</small></td><td>${pct(s.base)}</td><td>${Number.isFinite(s.auc)?num(s.auc,3):'—'}</td><td>${Number.isFinite(s.ap)?num(s.ap,3):'—'}</td><td>${s.pos||0}/${s.n||0}</td></tr>`}$('detailsBody').innerHTML=html;$('detailsBody').querySelectorAll('tr').forEach(r=>r.addEventListener('click',()=>{state.t=Number(r.dataset.t);state.h=Number(r.dataset.h);renderMetrics();renderSix();renderPrice();renderBars();renderValidation();renderTable();$('six').scrollIntoView({behavior:'smooth'})}))}
+function renderTable(){let html='';for(const t of THRESHOLDS)for(const h of HORIZONS){const s=state.stats[sid(t,h.n)];html+=`<tr class="${state.t===t&&state.h===h.n?'selected':''}" data-t="${t}" data-h="${h.n}"><td><strong>-${t}% / ${h.name}</strong></td><td>${pct(s.path)}</td><td>${pct(s.model)}</td><td>${pct(s.analog)} <small>(${s.analogEvents||0}/${s.analogN||0})</small></td><td>${pct(s.base)}</td><td>${Number.isFinite(s.auc)?num(s.auc,3):'—'}</td><td>${Number.isFinite(s.ap)?num(s.ap,3):'—'}</td><td>${s.pos||0}/${s.n||0}</td></tr>`}$('detailsBody').innerHTML=html;$('detailsBody').querySelectorAll('tr').forEach(r=>r.addEventListener('click',()=>{state.t=Number(r.dataset.t);state.h=Number(r.dataset.h);renderMetrics();renderSix();renderPrice();renderBars();renderValidation();renderTable();$('six').scrollIntoView({behavior:'smooth'})}))}
 function dlBlob(filename,blob){const a=document.createElement('a'),url=URL.createObjectURL(blob);a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),500)}
-function downloadStats(){const latest=state.series.at(-1)?.d||'';const fields=['symbol','as_of','threshold_pct','horizon_days','horizon_name','historical_rate','similar_regime_rate','logistic_rate','test_roc_auc','test_pr_auc','test_positive_days','test_total_days','analog_days','data_source'];const enc=s=>'"'+String(s??'').replace(/"/g,'""')+'"';const rec=[fields.join(',')];for(const t of THRESHOLDS)for(const h of HORIZONS){const s=state.stats[sid(t,h.n)],vals=[state.ticker,latest,t,h.n,h.name,s.base,s.analog,s.model,s.auc,s.ap,s.pos,s.n,s.analogN,state.source];rec.push(vals.map(x=>Number.isFinite(x)||typeof x==='string'?enc(x):enc('')).join(','))}dlBlob(`CrashScope_${state.ticker}_${latest}.csv`,new Blob(['\uFEFF'+rec.join('\r\n')],{type:'text/csv;charset=utf-8'}))}
+function downloadStats(){const latest=state.series.at(-1)?.d||'';const fields=['symbol','as_of','threshold_pct','horizon_days','horizon_name','historical_rate','similar_regime_rate','logistic_rate','simulation_touch_rate','prob_terminal_below_spot','terminal_median','terminal_p10','terminal_p90','test_roc_auc','test_pr_auc','test_positive_days','test_total_days','analog_days','data_source'];const enc=s=>'"'+String(s??'').replace(/"/g,'""')+'"';const rec=[fields.join(',')];for(const t of THRESHOLDS)for(const h of HORIZONS){const s=state.stats[sid(t,h.n)],vals=[state.ticker,latest,t,h.n,h.name,s.base,s.analog,s.model,s.path,state.forecast?.byH[h.n]?.down,state.forecast?.byH[h.n]?.median,state.forecast?.byH[h.n]?.q10,state.forecast?.byH[h.n]?.q90,s.auc,s.ap,s.pos,s.n,s.analogN,state.source];rec.push(vals.map(x=>Number.isFinite(x)||typeof x==='string'?enc(x):enc('')).join(','))}dlBlob(`CrashScope_${state.ticker}_${latest}.csv`,new Blob(['\uFEFF'+rec.join('\r\n')],{type:'text/csv;charset=utf-8'}))}
 function saveSvg(){const src=$('priceChart').querySelector('svg');if(!src)return;const clone=src.cloneNode(true);clone.setAttribute('xmlns','http://www.w3.org/2000/svg');const style=document.createElementNS('http://www.w3.org/2000/svg','style');style.textContent='.axis{font-family:sans-serif;font-size:11px;fill:#91a9c7}.gridline{stroke:#34506b;stroke-dasharray:3 5}.chartline{fill:none;stroke:#65c9ff;stroke-width:2.3}.marker{fill:#ff8497;stroke:#263447;stroke-width:1}';clone.insertBefore(style,clone.firstChild);dlBlob(`CrashScope_price_${state.ticker}.svg`,new Blob([new XMLSerializer().serializeToString(clone)],{type:'image/svg+xml'}))}
-$('tickerSelect').addEventListener('change',e=>{state.ticker=e.target.value;renderAll()});$('historySelect').addEventListener('change',e=>{state.years=e.target.value;renderAll()});$('displaySelect').addEventListener('change',e=>{state.mode=e.target.value;renderMetrics();renderSix();renderBars();renderTable();$('selectedModelLabel').textContent=modelName()});$('rangeSeg').addEventListener('click',e=>{const b=e.target.closest('button[data-range]');if(!b)return;state.range=b.dataset.range;document.querySelectorAll('#rangeSeg button').forEach(a=>a.classList.toggle('on',a===b));renderPrice()});$('importBtn').addEventListener('click',()=>$('fileInput').click());$('fileInput').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const text=await f.text(),v=parseCSV(text,f.name);state.rows=v.rows;state.source=v.source;state.ticker=v.rows[0]?.SPY?'SPY':(Object.keys(v.rows.find(r=>Object.keys(r).length>1)||{}).find(k=>k!=='d')||'');onLoaded()}catch(err){setAlert('CSV를 읽지 못했습니다: '+err.message,true)}finally{e.target.value=''}});$('reloadBtn').addEventListener('click',loadPublic);$('exportBtn').addEventListener('click',downloadStats);$('svgBtn').addEventListener('click',saveSvg);
-/* 스냅샷 로딩 비활성화: 뒤에 최신 가격 리더가 실행됩니다. */
+$('tickerSelect').addEventListener('change',e=>{if(state.source.startsWith('사용자 CSV')){state.ticker=e.target.value;onLoaded()}else loadPublic(e.target.value)});$('historySelect').addEventListener('change',e=>{state.years=e.target.value;renderAll()});$('displaySelect').addEventListener('change',e=>{state.mode=e.target.value;renderMetrics();renderSix();renderBars();renderTable();$('selectedModelLabel').textContent=modelName()});$('rangeSeg').addEventListener('click',e=>{const b=e.target.closest('button[data-range]');if(!b)return;state.range=b.dataset.range;document.querySelectorAll('#rangeSeg button').forEach(a=>a.classList.toggle('on',a===b));renderPrice()});$('importBtn').addEventListener('click',()=>$('fileInput').click());$('fileInput').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const text=await f.text(),v=parseCSV(text,f.name);state.rows=v.rows;state.source=v.source;state.ticker=v.rows[0]?.SPY?'SPY':(Object.keys(v.rows.find(r=>Object.keys(r).length>1)||{}).find(k=>k!=='d')||'');state.quoteMeta=null;onLoaded()}catch(err){setAlert('CSV를 읽지 못했습니다: '+err.message,true)}finally{e.target.value=''}});$('symbolBtn').addEventListener('click',()=>{const code=$('symbolInput').value.trim();if(code)loadPublic(code)});$('symbolInput').addEventListener('keydown',e=>{if(e.key==='Enter'){$('symbolBtn').click()}});$('reloadBtn').addEventListener('click',()=>loadPublic(state.ticker));$('exportBtn').addEventListener('click',downloadStats);$('svgBtn').addEventListener('click',saveSvg);
+loadPublic('SPY');
 </script>
-<script>
-
-(function(){
-'use strict';
-const MAX_AGE=5;
-const names=['SPY','QQQ','IWM','DIA','TLT','GLD','XLK','XLF','XLE','XLV','XLY','XLP','XLI','XLU','XLB','EEM','EFA','AAPL','MSFT','NVDA','AMD','TSLA','AMZN','GOOGL','META','005930.KS','000660.KS','^KS11','^KQ11'];
-let reqSeq=0;
-const byId=id=>document.getElementById(id);
-const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const ageOf=d=>Math.max(0,Math.floor((Date.now()-new Date(d+'T00:00:00Z').getTime())/86400000));
-async function retrieve(code){
- const now=Date.now(),dt=new Date(now),period1=Math.floor(Date.UTC(dt.getUTCFullYear()-20,dt.getUTCMonth(),dt.getUTCDate())/1000),period2=Math.floor(now/1000)+172800;
- const target='https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(code)+'?period1='+period1+'&period2='+period2+'&interval=1d';
- const sources=['https://proxy.cors.dev/'+target,'https://api.allorigins.win/raw?url='+encodeURIComponent(target)];
- let err;
- for(const uri of sources){
-  try{
-   const res=await fetch(uri,{cache:'no-store',credentials:'omit',signal:AbortSignal.timeout(12000)});
-   if(!res.ok)throw Error('HTTP '+res.status);
-   const json=await res.json();
-   const data=json?.chart?.result?.[0];
-   if(!data?.timestamp?.length)throw Error(json?.chart?.error?.description||'시세 응답 오류');
-   const quote=data.indicators?.quote?.[0],adjusted=data.indicators?.adjclose?.[0]?.adjclose;
-   if(!quote?.close)throw Error('가격 배열이 없습니다.');
-   const zone=data.meta?.exchangeTimezoneName||'America/New_York', map=new Map();
-   for(let i=0;i<data.timestamp.length;i++){
-    const p=Number(adjusted?.[i]??quote.close[i]);
-    if(!Number.isFinite(p)||p<=0)continue;
-    const date=new Date(data.timestamp[i]*1000).toLocaleDateString('sv-SE',{timeZone:zone});
-    if(/^\d{4}-\d{2}-\d{2}$/.test(date))map.set(date,p);
-   }
-   const rows=[...map].sort((a,b)=>a[0].localeCompare(b[0])).map(([d,p])=>({d,p}));
-   if(rows.length<150)throw Error('과거 가격 자료가 충분하지 않습니다.');
-   return {code,rows,meta:data.meta||{}};
-  }catch(e){err=e;console.warn('가격 소스 실패',code,uri.slice(0,29),e)}
- }
- throw Error(code+': '+(err?.message||'시세 연결 실패'));
-}
-function merge(main,supplements){
- const lookup=new Map(main.rows.map(r=>[r.d,{d:r.d,[main.code]:r.p}]));
- for(const other of supplements){
-  if(!other)continue;
-  for(const r of other.rows){const cell=lookup.get(r.d);if(cell)cell[other.code]=r.p;}
- }
- return [...lookup.values()].sort((a,b)=>a.d.localeCompare(b.d));
-}
-window.fillTickers=function(){
- const symbols=state.source.startsWith('사용자 CSV')?[...new Set(state.rows.flatMap(r=>Object.keys(r)).filter(k=>k!=='d'&&k!=='^VIX'))]:names.slice();
- if(!symbols.includes(state.ticker))symbols.unshift(state.ticker);
- state.tickers=symbols;
- byId('tickerSelect').innerHTML=symbols.map(k=>'<option value="'+esc(k)+'">'+esc(ASSET_NAMES[k]||k)+'</option>').join('');
- byId('tickerSelect').value=state.ticker;
-};
-window.selectedVal=function(result){return state.liveFresh?result[state.mode]:NaN;};
-window.onLoaded=function(){
- fillTickers();
- byId('loading').classList.add('hidden');
- byId('content').classList.remove('hidden');
- byId('exportBtn').disabled=false;
- state.ready=true;
- const relevant=state.rows.filter(r=>Number.isFinite(r[state.ticker]));
- const latest=relevant.at(-1)?.d||'';
- state.liveFresh=ageOf(latest)<=MAX_AGE;
- const qtime=state.liveMeta?.regularMarketTime?new Date(state.liveMeta.regularMarketTime*1000).toLocaleString('ko-KR',{timeZone:'America/New_York',hour12:false}):null;
- byId('dataInfo').innerHTML='<b style="color:'+(state.liveFresh?'#66e4b5':'#ff8497')+'">'+esc(latest)+' ('+(state.liveFresh?'최근 거래일':'오래됨')+')</b><br><span class="muted">'+esc(state.source)+(qtime?'<br>미국 동부 시세시각 '+esc(qtime):'')+'</span>';
- if(state.liveFresh)setAlert(latest+' 거래일 기준 연구용 예측치입니다. 실제 실시간 체결가·호가가 아니며 매매 신호로 검증되지 않았습니다.');
- else setAlert('최신 가격을 확인할 수 없어 현재 급락 예측을 차단했습니다. 마지막 가격: '+latest,true);
- renderAll();
-};
-async function refresh(code){
- const seq=++reqSeq;
- code=String(code||state.ticker||'SPY').toUpperCase().trim();
- if(!/^[A-Z0-9^.= -]{1,24}$/.test(code)||code.includes(' ')){
-  setAlert('종목 코드를 확인하세요 (예: SPY, NVDA, 005930.KS)',true);return;
- }
- setAlert('');
- byId('loading').classList.remove('hidden');
- byId('content').classList.add('hidden');
- byId('reloadBtn').disabled=true;
- byId('liveSymbolBtn').disabled=true;
- state.ready=false;
- state.liveFresh=false;
- try{
-  const main=await retrieve(code);
-  if(seq!==reqSeq)return;
-  const age=ageOf(main.rows.at(-1).d);
-  if(age>MAX_AGE)throw Error('최신 가격 기준일이 '+main.rows.at(-1).d+'로 '+age+'일 전입니다. 오래된 정보는 현재 예측에 사용하지 않습니다.');
-  const extras=await Promise.allSettled(['^VIX','HYG','LQD'].filter(k=>k!==code).map(k=>retrieve(k)));
-  if(seq!==reqSeq)return;
-  const additional=extras.map(v=>v.status==='fulfilled'?v.value:null);
-  state.rows=merge(main,additional);
-  state.ticker=code;
-  state.source='Yahoo Finance 일별 수정종가 · 외부 CORS 중계';
-  state.liveMeta=main.meta;
-  onLoaded();
-  if(extras.some(v=>v.status==='rejected'))setAlert('보조 지표(VIX/신용 ETF) 일부 조회 실패: 사용 가능한 지표만 사용했습니다. 최종 가격 기준일 '+main.rows.at(-1).d+'.');
- }catch(e){
-  if(seq!==reqSeq)return;
-  byId('loading').classList.add('hidden');
-  byId('content').classList.add('hidden');
-  byId('dataInfo').innerHTML='<span style="color:#ff8497">현재 가격 조회 실패 · 확률 계산 중단</span>';
-  setAlert('최신 가격을 확인하지 못해 현재 예측을 표시하지 않습니다. 연결 상태를 확인하고 다시 시도해주세요. '+e.message,true);
- }finally{
-  if(seq===reqSeq){byId('reloadBtn').disabled=false;byId('liveSymbolBtn').disabled=false;}
- }
-}
-byId('tickerSelect').addEventListener('change',function(ev){
- ev.stopImmediatePropagation();
- if(state.source.startsWith('사용자 CSV')){state.ticker=ev.target.value;onLoaded();}
- else refresh(ev.target.value);
-},true);
-byId('reloadBtn').addEventListener('click',function(ev){
- ev.stopImmediatePropagation();refresh(state.ticker);
-},true);
-byId('liveSymbolBtn').addEventListener('click',()=>{const s=byId('liveSymbolInput').value.trim();if(s)refresh(s)});
-byId('liveSymbolInput').addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();byId('liveSymbolBtn').click();}});
-refresh('SPY');
-})();
-
-</script>
-<script src="forecast-extension.js"></script><script>if(state.ready)renderAll();</script></body></html>
+</body></html>
