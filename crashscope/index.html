@@ -44,7 +44,7 @@ const SOURCE_URLS=[
 ];
 const HORIZONS=[{n:5,name:'1주'},{n:21,name:'1개월'},{n:63,name:'3개월'}],THRESHOLDS=[10,20];
 const ASSET_NAMES={SPY:'S&P 500 ETF · SPY',QQQ:'NASDAQ 100 ETF · QQQ',IWM:'미국 소형주 ETF · IWM',EEM:'신흥국 ETF · EEM',EFA:'선진국 ETF · EFA',XLK:'미국 기술섹터 ETF · XLK',XLF:'미국 금융섹터 ETF · XLF',XLE:'미국 에너지 ETF · XLE',XLV:'미국 헬스케어 ETF · XLV',XLY:'미국 경기소비재 ETF · XLY',XLP:'미국 필수소비재 ETF · XLP',XLI:'미국 산업재 ETF · XLI',XLU:'미국 유틸리티 ETF · XLU',XLB:'미국 소재 ETF · XLB',GLD:'금 ETF · GLD'};
-const state={rows:[],tickers:[],ticker:'SPY',years:'10',mode:'logit',range:'5',t:10,h:21,source:'',stats:{},features:[],series:[],ready:false,volumePrefix:[],featureNames:[]};
+const state={rows:[],tickers:[],ticker:'SPY',years:'all',mode:'logit',range:'5',t:10,h:21,source:'',stats:{},features:[],series:[],ready:false,volumePrefix:[],featureNames:[]};
 const $=id=>document.getElementById(id);
 const safe=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pct=x=>Number.isFinite(x)?(x*100).toFixed(x<0.01?2:1)+'%':'—';
@@ -148,7 +148,7 @@ const byId=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ageOf=d=>Math.max(0,Math.floor((Date.now()-new Date(d+'T00:00:00Z').getTime())/86400000));
 async function retrieve(code){
- const target='https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(code)+'?range=10y&interval=1d';
+ const target='https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(code)+'?range=20y&interval=1d';
  const sources=['https://proxy.cors.dev/'+target,'https://api.allorigins.win/raw?url='+encodeURIComponent(target)];
  let err;
  for(const uri of sources){
@@ -256,4 +256,4 @@ refresh('SPY');
 })();
 
 </script>
-</body></html>
+<script src="forecast-extension.js"></script><script>if(state.ready)renderAll();</script></body></html>
