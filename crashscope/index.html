@@ -21,21 +21,21 @@ a{color:var(--blue)}button,select,input{font:inherit}button{cursor:pointer}butto
 </style>
 </head>
 <body>
-<header><div class="wrap"><a class="brand" href="#top"><span class="logo"><svg width="23" height="23" viewBox="0 0 24 24" fill="none"><path d="m2 7 5 5 4-4 4 7 7-8" stroke="#86dfff" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/><path d="M19 7h3v3" stroke="#6ee2b8" stroke-width="2" stroke-linecap="round"/></svg></span><span>CrashScope<small>MARKET RISK LAB</small></span></a><nav><a href="#six">6개 시나리오</a><a href="#charts">가격·변동성</a><a href="#validation">모델 검증</a><a href="#methodology">방법론</a></nav><div class="topright"><span class="tag"><i class="dot"></i> 연구용 · 실시간 아님</span><button class="btn" id="importBtn">CSV <span class="mobile-hide">가져오기</span> ↗</button><input id="fileInput" type="file" accept=".csv,text/csv" hidden></div></div></header>
+<header><div class="wrap"><a class="brand" href="#top"><span class="logo"><svg width="23" height="23" viewBox="0 0 24 24" fill="none"><path d="m2 7 5 5 4-4 4 7 7-8" stroke="#86dfff" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/><path d="M19 7h3v3" stroke="#6ee2b8" stroke-width="2" stroke-linecap="round"/></svg></span><span>CrashScope<small>MARKET RISK LAB</small></span></a><nav><a href="#six">6개 시나리오</a><a href="#charts">가격·변동성</a><a href="#validation">모델 검증</a><a href="#methodology">방법론</a></nav><div class="topright"><span class="tag"><i class="dot"></i> 최신 거래일 조회 · 연구용</span><button class="btn" id="importBtn">CSV <span class="mobile-hide">가져오기</span> ↗</button><input id="fileInput" type="file" accept=".csv,text/csv" hidden></div></div></header>
 <main id="top" class="wrap">
-<section class="hero"><div class="eyebrow">DOWNSIDE RISK MONITOR · 6 SCENARIOS</div><h1>-10%와 -20% 하락 위험을<br><span>세 가지 기간으로 분석합니다.</span></h1><p class="desc">1주·1개월·3개월 × -10%·-20%를 한 화면에서 비교하세요. 역사적 발생률, 유사 국면 비교, 간단한 로지스틱 회귀를 구분하고 시계열 검증 결과까지 표시합니다. <strong>미래 급락을 보장하거나 실제 시세를 실시간 예측하는 서비스는 아닙니다.</strong></p><div class="hero-trust"><span class="chip"><b>6개</b> 급락 조건</span><span class="chip"><b>5 / 21 / 63</b> 거래일</span><span class="chip"><b>과거 가격</b> 기반</span><span class="chip"><b>누출 방지</b> 시계열 분리 검증</span><span class="chip"><b>CSV</b> 직접 업로드 지원</span></div></section>
+<section class="hero"><div class="eyebrow">DOWNSIDE RISK MONITOR · 6 SCENARIOS</div><h1>-10%와 -20% 하락 위험을<br><span>세 가지 기간으로 분석합니다.</span></h1><p class="desc">1주·1개월·3개월 × -10%·-20%를 한 화면에서 비교하세요. 역사적 발생률, 유사 국면 비교, 간단한 로지스틱 회귀를 구분하고 시계열 검증 결과까지 표시합니다. <strong>미래 급락을 보장하거나 실시간 호가 스트리밍이 아니며 최신 거래일 가격에서 추정한 연구용 값일 뿐입니다.</strong></p><div class="hero-trust"><span class="chip"><b>6개</b> 급락 조건</span><span class="chip"><b>5 / 21 / 63</b> 거래일</span><span class="chip"><b>최신 종가</b> 자동 조회</span><span class="chip"><b>누출 방지</b> 시계열 분리 검증</span><span class="chip"><b>CSV</b> 직접 업로드 지원</span></div></section>
 <div id="alert" class="alert" role="status"></div>
-<section class="controls" aria-label="분석 설정"><label class="control grow"><span>분석 자산</span><select id="tickerSelect"><option>데이터 불러오는 중…</option></select></label><label class="control"><span>과거 학습 구간</span><select id="historySelect"><option value="all">전체 기간</option><option value="15">최근 15년</option><option value="10" selected>최근 10년</option><option value="5">최근 5년</option></select></label><label class="control"><span>발생 확률 기준</span><select id="displaySelect"><option value="logit">로지스틱 모델 (실험)</option><option value="analog">유사 국면 발생률</option><option value="base">과거 단순 발생률</option></select></label><div class="control-spacer"></div><div class="control note"><span>가격 데이터 출처 · 기준일</span><div class="source" id="dataInfo"><span class="status"><i></i>연결 중…</span></div></div><button class="btn" id="exportBtn" disabled>분석 CSV ↓</button><button class="btn" id="reloadBtn">원본 새로고침</button></section>
-<section id="dashboard"><div id="loading" class="loader"><div class="spin"></div><br>공개 가격 데이터를 불러오는 중입니다…<br><small>연결 실패 시 위의 ‘CSV 가져오기’로 직접 분석할 수 있습니다.</small></div><div id="content" class="hidden">
+<section class="controls" aria-label="분석 설정"><label class="control grow"><span>분석 자산</span><select id="tickerSelect"><option>데이터 불러오는 중…</option></select></label><label class="control"><span>과거 학습 구간</span><select id="historySelect"><option value="all">전체 기간</option><option value="15">최근 15년</option><option value="10" selected>최근 10년</option><option value="5">최근 5년</option></select></label><label class="control"><span>발생 확률 기준</span><select id="displaySelect"><option value="logit">로지스틱 모델 (실험)</option><option value="analog">유사 국면 발생률</option><option value="base">과거 단순 발생률</option></select></label><label class="control"><span>다른 종목 입력</span><input type="text" id="liveSymbolInput" placeholder="NVDA / 005930.KS" maxlength="24"></label><button class="btn" id="liveSymbolBtn">종목 조회</button><div class="control-spacer"></div><div class="control note"><span>가격 데이터 출처 · 기준일</span><div class="source" id="dataInfo"><span class="status"><i></i>연결 중…</span></div></div><button class="btn" id="exportBtn" disabled>분석 CSV ↓</button><button class="btn" id="reloadBtn">최신 시세 갱신</button></section>
+<section id="dashboard"><div id="loading" class="loader"><div class="spin"></div><br>최신 거래일 가격과 10년간 일별 가격 데이터를 불러오는 중입니다…<br><small>연결 실패 시 위의 ‘CSV 가져오기’로 직접 분석할 수 있습니다.</small></div><div id="content" class="hidden">
 <div class="grid-metrics" id="metrics"></div>
 <section id="six"><div class="sectionheading"><div><h2>급락 시나리오 6개</h2><p>카드를 누르면 아래 가격·검증 차트가 해당 조건으로 변경됩니다.</p></div><div class="legend"><span><i class="swatch"></i> 선택 모델</span><span><i class="swatch mint"></i> 전체 과거 발생률</span></div></div><div class="six" id="scenarioCards"></div><p class="callout">* 겹치는 기간의 시작일들은 독립 표본이 아니며, 드문 급락의 추정치는 매우 불안정할 수 있습니다. 0%는 “안전하다”는 뜻이 아닙니다.</p></section>
 <section class="two" id="charts"><article class="panel"><div class="panel-head"><div><h3 id="priceHeading">가격 흐름</h3><p class="subhead">수정 종가 · 처음 값을 100으로 환산 · 빨간 점은 과거 해당 급락 구간의 시작</p></div><div class="seg" id="rangeSeg"><button data-range="1" type="button">1년</button><button data-range="5" type="button" class="on">5년</button><button data-range="all" type="button">전체</button></div></div><div class="chartbox" id="priceChart"><div class="tooltip" id="priceTip"></div></div></article><article class="panel"><div class="panel-head"><div><h3>6개 하락 조건 비교</h3><p class="subhead">선택 기준 vs 과거 발생률 · 단위 %</p></div></div><div class="chartbox bargraph" id="barChart"></div><div class="legend" style="margin-top:0"><span><i class="swatch"></i><span id="selectedModelLabel">로지스틱 모델</span></span><span><i class="swatch mint"></i>기본 발생률</span></div></article></section>
 <section class="two"><article class="panel"><div class="panel-head"><div><h3>위험 지표 추이</h3><p class="subhead">20거래일 연율화 실현변동성 vs VIX (VIX 자료가 있을 때)</p></div></div><div class="chartbox short" id="volChart"></div><div class="legend"><span><i class="swatch"></i>20일 실현변동성</span><span><i class="swatch coral"></i>VIX</span></div></article><article class="panel" id="validation"><div class="panel-head"><div><h3 id="valHeading">모델 시계열 검증</h3><p class="subhead">앞선 80% 학습 → 이후 20% 평가 · 예측기간만큼 공백 구간</p></div></div><div id="valNumbers" class="grid-metrics" style="margin:4px 0 13px;grid-template-columns:repeat(3,1fr)"></div><div class="chartbox short" id="testChart"></div><div class="quality" id="quality"></div></article></section>
 <section class="panel" style="margin-bottom:20px"><div class="panel-head"><div><h3>모든 조건 상세 비교</h3><p class="subhead">AUC가 높아도 희소 사건의 실제 예측 확률이 정확하다는 뜻은 아닙니다.</p></div><button class="btn" id="svgBtn">가격 그래프 SVG ↓</button></div><div class="table-wrap"><table class="stat-table"><thead><tr><th>급락 조건</th><th>로지스틱</th><th>유사국면</th><th>기본 발생률</th><th>검증 ROC-AUC</th><th>검증 PR-AUC</th><th>검증 급락수/표본</th></tr></thead><tbody id="detailsBody"></tbody></table></div></section>
 </div></section>
-<section id="methodology" class="about"><article class="panel"><h3>어떻게 계산하나요?</h3><p>기준일 <b>t</b>의 종가에서 <b>향후 5·21·63거래일의 최저 종가</b>가 -10% 또는 -20% 이하인지를 계산합니다. 종가에 국한하므로 장중 저점은 포착하지 못합니다.</p><p><b>과거 발생률</b>: 모든 과거 기준일 중 하락 조건을 만족한 비율. <b>유사국면</b>: 20일 변동성, 최근 수익률, 고점 대비 하락, 선택적으로 VIX·크레딧 ETF 상대강도가 비슷한 과거 기준일 120개 내외의 빈도를 완만히 보정한 값입니다.</p><p><b>로지스틱 모델</b>: 같은 특징을 사용한 정규화 로지스틱 회귀(연구용 예제). 목표 기간이 끝나지 않은 최근 관측치는 학습에서 제외합니다. 검증은 시간순 분할 + 시계열 공백 구간을 사용합니다. <b>XGBoost 훈련 모델이 아닙니다.</b></p></article><article class="panel"><h3>데이터와 해석상 주의</h3><p>기본 자료는 공개 저장소에 게시된 <a href="https://github.com/manisahni/marketdata" target="_blank" rel="noopener">ETF 수정 종가 자료</a>입니다. 제공된 스냅샷은 <b>2026-08-11</b>까지이며 자동 실시간 시세가 아닙니다. 최신 가격을 보려면 직접 CSV를 가져오세요. 원본 라이선스·이용 조건은 소스에서 확인해야 합니다.</p><p>VIX는 시세의 변동성 기대를 나타내며, HYG/LQD 상대성과는 크레딧 여건의 <b>대용 지표</b>이지 실제 신용스프레드가 아닙니다. 단순 수익률·변동성 지표만으로 옵션의 위험중립 왜도나 정밀한 시장충격을 분석할 수 없습니다.</p><p><b>참고 연구:</b> <a href="https://doi.org/10.1016/j.irfa.2026.105252" target="_blank" rel="noopener">Regime vs. shock (2026)</a> 및 <a href="https://ajofa.org/index.php/ojs/article/view/15" target="_blank" rel="noopener">Fear, Policy Noise and Market Pain (2026)</a>. 이 페이지의 결과는 논문 모델을 재현한 공식 예측치가 아닙니다.</p><ul><li>표본의 겹침·구조적 변화·후행 데이터를 무시하면 확률이 과신될 수 있습니다.</li><li>검증 구간에 급락이 충분하지 않으면 AUC·PR-AUC를 신뢰하기 어렵습니다.</li><li>개별 종목 CSV를 가져와도 내부 정보·뉴스·옵션 데이터는 자동 반영되지 않습니다.</li></ul></article></section>
+<section id="methodology" class="about"><article class="panel"><h3>어떻게 계산하나요?</h3><p>기준일 <b>t</b>의 종가에서 <b>향후 5·21·63거래일의 최저 종가</b>가 -10% 또는 -20% 이하인지를 계산합니다. 종가에 국한하므로 장중 저점은 포착하지 못합니다.</p><p><b>과거 발생률</b>: 모든 과거 기준일 중 하락 조건을 만족한 비율. <b>유사국면</b>: 20일 변동성, 최근 수익률, 고점 대비 하락, 선택적으로 VIX·크레딧 ETF 상대강도가 비슷한 과거 기준일 120개 내외의 빈도를 완만히 보정한 값입니다.</p><p><b>로지스틱 모델</b>: 같은 특징을 사용한 정규화 로지스틱 회귀(연구용 예제). 목표 기간이 끝나지 않은 최근 관측치는 학습에서 제외합니다. 검증은 시간순 분할 + 시계열 공백 구간을 사용합니다. <b>XGBoost 훈련 모델이 아닙니다.</b></p></article><article class="panel"><h3>데이터와 해석상 주의</h3><p>기본 자료는 접속할 때마다 <a href="https://finance.yahoo.com/" target="_blank" rel="noopener">Yahoo Finance</a> 비공식 일별 가격 API에서 조회합니다. 브라우저 접근을 위해 <a href="https://cors.dev/guides/yahoo-finance-api-cors" target="_blank" rel="noopener">외부 CORS 중계</a>를 사용하며 지연·차단될 수 있습니다. <b>마지막 거래일이 5일 넘게 오래되었거나 가져오지 못하면 현재 급락 위험을 표시하지 않습니다.</b> 이 화면은 실시간 시세 서비스나 검증된 투자 예측 서비스가 아닙니다.</p><p>VIX는 시세의 변동성 기대를 나타내며, HYG/LQD 상대성과는 크레딧 여건의 <b>대용 지표</b>이지 실제 신용스프레드가 아닙니다. 단순 수익률·변동성 지표만으로 옵션의 위험중립 왜도나 정밀한 시장충격을 분석할 수 없습니다.</p><p><b>참고 연구:</b> <a href="https://doi.org/10.1016/j.irfa.2026.105252" target="_blank" rel="noopener">Regime vs. shock (2026)</a> 및 <a href="https://ajofa.org/index.php/ojs/article/view/15" target="_blank" rel="noopener">Fear, Policy Noise and Market Pain (2026)</a>. 이 페이지의 결과는 논문 모델을 재현한 공식 예측치가 아닙니다.</p><ul><li>표본의 겹침·구조적 변화·후행 데이터를 무시하면 확률이 과신될 수 있습니다.</li><li>검증 구간에 급락이 충분하지 않으면 AUC·PR-AUC를 신뢰하기 어렵습니다.</li><li>개별 종목 CSV를 가져와도 내부 정보·뉴스·옵션 데이터는 자동 반영되지 않습니다.</li></ul></article></section>
 </main>
-<footer><div class="wrap footerrow"><div>© CrashScope · 금융시장 위험 탐색용 교육/연구 프로토타입 · 투자 자문 아님</div><div><a href="#top">맨 위로 ↑</a> · <a href="https://github.com/manisahni/marketdata" target="_blank" rel="noopener">데이터 출처</a> · <a href="#methodology">방법론</a></div></div></footer>
+<footer><div class="wrap footerrow"><div>© CrashScope · 금융시장 위험 탐색용 교육/연구 프로토타입 · 투자 자문 아님</div><div><a href="#top">맨 위로 ↑</a> · <a href="https://finance.yahoo.com/" target="_blank" rel="noopener">데이터 출처</a> · <a href="#methodology">방법론</a></div></div></footer>
 <script>
 'use strict';
 const SOURCE_URLS=[
@@ -135,6 +135,125 @@ function dlBlob(filename,blob){const a=document.createElement('a'),url=URL.creat
 function downloadStats(){const latest=state.series.at(-1)?.d||'';const fields=['symbol','as_of','threshold_pct','horizon_days','horizon_name','historical_rate','similar_regime_rate','logistic_rate','test_roc_auc','test_pr_auc','test_positive_days','test_total_days','analog_days','data_source'];const enc=s=>'"'+String(s??'').replace(/"/g,'""')+'"';const rec=[fields.join(',')];for(const t of THRESHOLDS)for(const h of HORIZONS){const s=state.stats[sid(t,h.n)],vals=[state.ticker,latest,t,h.n,h.name,s.base,s.analog,s.model,s.auc,s.ap,s.pos,s.n,s.analogN,state.source];rec.push(vals.map(x=>Number.isFinite(x)||typeof x==='string'?enc(x):enc('')).join(','))}dlBlob(`CrashScope_${state.ticker}_${latest}.csv`,new Blob(['\uFEFF'+rec.join('\r\n')],{type:'text/csv;charset=utf-8'}))}
 function saveSvg(){const src=$('priceChart').querySelector('svg');if(!src)return;const clone=src.cloneNode(true);clone.setAttribute('xmlns','http://www.w3.org/2000/svg');const style=document.createElementNS('http://www.w3.org/2000/svg','style');style.textContent='.axis{font-family:sans-serif;font-size:11px;fill:#91a9c7}.gridline{stroke:#34506b;stroke-dasharray:3 5}.chartline{fill:none;stroke:#65c9ff;stroke-width:2.3}.marker{fill:#ff8497;stroke:#263447;stroke-width:1}';clone.insertBefore(style,clone.firstChild);dlBlob(`CrashScope_price_${state.ticker}.svg`,new Blob([new XMLSerializer().serializeToString(clone)],{type:'image/svg+xml'}))}
 $('tickerSelect').addEventListener('change',e=>{state.ticker=e.target.value;renderAll()});$('historySelect').addEventListener('change',e=>{state.years=e.target.value;renderAll()});$('displaySelect').addEventListener('change',e=>{state.mode=e.target.value;renderMetrics();renderSix();renderBars();renderTable();$('selectedModelLabel').textContent=modelName()});$('rangeSeg').addEventListener('click',e=>{const b=e.target.closest('button[data-range]');if(!b)return;state.range=b.dataset.range;document.querySelectorAll('#rangeSeg button').forEach(a=>a.classList.toggle('on',a===b));renderPrice()});$('importBtn').addEventListener('click',()=>$('fileInput').click());$('fileInput').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const text=await f.text(),v=parseCSV(text,f.name);state.rows=v.rows;state.source=v.source;state.ticker=v.rows[0]?.SPY?'SPY':(Object.keys(v.rows.find(r=>Object.keys(r).length>1)||{}).find(k=>k!=='d')||'');onLoaded()}catch(err){setAlert('CSV를 읽지 못했습니다: '+err.message,true)}finally{e.target.value=''}});$('reloadBtn').addEventListener('click',loadPublic);$('exportBtn').addEventListener('click',downloadStats);$('svgBtn').addEventListener('click',saveSvg);
-loadPublic();
+/* 스냅샷 로딩 비활성화: 뒤에 최신 가격 리더가 실행됩니다. */
+</script>
+<script>
+
+(function(){
+'use strict';
+const MAX_AGE=5;
+const names=['SPY','QQQ','IWM','DIA','TLT','GLD','XLK','XLF','XLE','XLV','XLY','XLP','XLI','XLU','XLB','EEM','EFA','AAPL','MSFT','NVDA','AMD','TSLA','AMZN','GOOGL','META','005930.KS','000660.KS','^KS11','^KQ11'];
+let reqSeq=0;
+const byId=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ageOf=d=>Math.max(0,Math.floor((Date.now()-new Date(d+'T00:00:00Z').getTime())/86400000));
+async function retrieve(code){
+ const target='https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(code)+'?range=10y&interval=1d';
+ const sources=['https://proxy.cors.dev/'+target,'https://api.allorigins.win/raw?url='+encodeURIComponent(target)];
+ let err;
+ for(const uri of sources){
+  try{
+   const res=await fetch(uri,{cache:'no-store',credentials:'omit',signal:AbortSignal.timeout(12000)});
+   if(!res.ok)throw Error('HTTP '+res.status);
+   const json=await res.json();
+   const data=json?.chart?.result?.[0];
+   if(!data?.timestamp?.length)throw Error(json?.chart?.error?.description||'시세 응답 오류');
+   const quote=data.indicators?.quote?.[0],adjusted=data.indicators?.adjclose?.[0]?.adjclose;
+   if(!quote?.close)throw Error('가격 배열이 없습니다.');
+   const zone=data.meta?.exchangeTimezoneName||'America/New_York', map=new Map();
+   for(let i=0;i<data.timestamp.length;i++){
+    const p=Number(adjusted?.[i]??quote.close[i]);
+    if(!Number.isFinite(p)||p<=0)continue;
+    const date=new Date(data.timestamp[i]*1000).toLocaleDateString('sv-SE',{timeZone:zone});
+    if(/^\d{4}-\d{2}-\d{2}$/.test(date))map.set(date,p);
+   }
+   const rows=[...map].sort((a,b)=>a[0].localeCompare(b[0])).map(([d,p])=>({d,p}));
+   if(rows.length<150)throw Error('과거 가격 자료가 충분하지 않습니다.');
+   return {code,rows,meta:data.meta||{}};
+  }catch(e){err=e;console.warn('가격 소스 실패',code,uri.slice(0,29),e)}
+ }
+ throw Error(code+': '+(err?.message||'시세 연결 실패'));
+}
+function merge(main,supplements){
+ const lookup=new Map(main.rows.map(r=>[r.d,{d:r.d,[main.code]:r.p}]));
+ for(const other of supplements){
+  if(!other)continue;
+  for(const r of other.rows){const cell=lookup.get(r.d);if(cell)cell[other.code]=r.p;}
+ }
+ return [...lookup.values()].sort((a,b)=>a.d.localeCompare(b.d));
+}
+window.fillTickers=function(){
+ const symbols=state.source.startsWith('사용자 CSV')?[...new Set(state.rows.flatMap(r=>Object.keys(r)).filter(k=>k!=='d'&&k!=='^VIX'))]:names.slice();
+ if(!symbols.includes(state.ticker))symbols.unshift(state.ticker);
+ state.tickers=symbols;
+ byId('tickerSelect').innerHTML=symbols.map(k=>'<option value="'+esc(k)+'">'+esc(ASSET_NAMES[k]||k)+'</option>').join('');
+ byId('tickerSelect').value=state.ticker;
+};
+window.selectedVal=function(result){return state.liveFresh?result[state.mode]:NaN;};
+window.onLoaded=function(){
+ fillTickers();
+ byId('loading').classList.add('hidden');
+ byId('content').classList.remove('hidden');
+ byId('exportBtn').disabled=false;
+ state.ready=true;
+ const relevant=state.rows.filter(r=>Number.isFinite(r[state.ticker]));
+ const latest=relevant.at(-1)?.d||'';
+ state.liveFresh=ageOf(latest)<=MAX_AGE;
+ const qtime=state.liveMeta?.regularMarketTime?new Date(state.liveMeta.regularMarketTime*1000).toLocaleString('ko-KR',{timeZone:'America/New_York',hour12:false}):null;
+ byId('dataInfo').innerHTML='<b style="color:'+(state.liveFresh?'#66e4b5':'#ff8497')+'">'+esc(latest)+' ('+(state.liveFresh?'최근 거래일':'오래됨')+')</b><br><span class="muted">'+esc(state.source)+(qtime?'<br>미국 동부 시세시각 '+esc(qtime):'')+'</span>';
+ if(state.liveFresh)setAlert(latest+' 거래일 기준 연구용 예측치입니다. 실제 실시간 체결가·호가가 아니며 매매 신호로 검증되지 않았습니다.');
+ else setAlert('최신 가격을 확인할 수 없어 현재 급락 예측을 차단했습니다. 마지막 가격: '+latest,true);
+ renderAll();
+};
+async function refresh(code){
+ const seq=++reqSeq;
+ code=String(code||state.ticker||'SPY').toUpperCase().trim();
+ if(!/^[A-Z0-9^.= -]{1,24}$/.test(code)||code.includes(' ')){
+  setAlert('종목 코드를 확인하세요 (예: SPY, NVDA, 005930.KS)',true);return;
+ }
+ setAlert('');
+ byId('loading').classList.remove('hidden');
+ byId('content').classList.add('hidden');
+ byId('reloadBtn').disabled=true;
+ byId('liveSymbolBtn').disabled=true;
+ state.ready=false;
+ state.liveFresh=false;
+ try{
+  const main=await retrieve(code);
+  if(seq!==reqSeq)return;
+  const age=ageOf(main.rows.at(-1).d);
+  if(age>MAX_AGE)throw Error('최신 가격 기준일이 '+main.rows.at(-1).d+'로 '+age+'일 전입니다. 오래된 정보는 현재 예측에 사용하지 않습니다.');
+  const extras=await Promise.allSettled(['^VIX','HYG','LQD'].filter(k=>k!==code).map(k=>retrieve(k)));
+  if(seq!==reqSeq)return;
+  const additional=extras.map(v=>v.status==='fulfilled'?v.value:null);
+  state.rows=merge(main,additional);
+  state.ticker=code;
+  state.source='Yahoo Finance 일별 수정종가 · 외부 CORS 중계';
+  state.liveMeta=main.meta;
+  onLoaded();
+  if(extras.some(v=>v.status==='rejected'))setAlert('보조 지표(VIX/신용 ETF) 일부 조회 실패: 사용 가능한 지표만 사용했습니다. 최종 가격 기준일 '+main.rows.at(-1).d+'.');
+ }catch(e){
+  if(seq!==reqSeq)return;
+  byId('loading').classList.add('hidden');
+  byId('content').classList.add('hidden');
+  byId('dataInfo').innerHTML='<span style="color:#ff8497">현재 가격 조회 실패 · 확률 계산 중단</span>';
+  setAlert('최신 가격을 확인하지 못해 현재 예측을 표시하지 않습니다. 연결 상태를 확인하고 다시 시도해주세요. '+e.message,true);
+ }finally{
+  if(seq===reqSeq){byId('reloadBtn').disabled=false;byId('liveSymbolBtn').disabled=false;}
+ }
+}
+byId('tickerSelect').addEventListener('change',function(ev){
+ ev.stopImmediatePropagation();
+ if(state.source.startsWith('사용자 CSV')){state.ticker=ev.target.value;onLoaded();}
+ else refresh(ev.target.value);
+},true);
+byId('reloadBtn').addEventListener('click',function(ev){
+ ev.stopImmediatePropagation();refresh(state.ticker);
+},true);
+byId('liveSymbolBtn').addEventListener('click',()=>{const s=byId('liveSymbolInput').value.trim();if(s)refresh(s)});
+byId('liveSymbolInput').addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();byId('liveSymbolBtn').click();}});
+refresh('SPY');
+})();
+
 </script>
 </body></html>
