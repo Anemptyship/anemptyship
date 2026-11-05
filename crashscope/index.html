@@ -148,7 +148,8 @@ const byId=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ageOf=d=>Math.max(0,Math.floor((Date.now()-new Date(d+'T00:00:00Z').getTime())/86400000));
 async function retrieve(code){
- const target='https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(code)+'?range=20y&interval=1d';
+ const now=Date.now(),dt=new Date(now),period1=Math.floor(Date.UTC(dt.getUTCFullYear()-20,dt.getUTCMonth(),dt.getUTCDate())/1000),period2=Math.floor(now/1000)+172800;
+ const target='https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(code)+'?period1='+period1+'&period2='+period2+'&interval=1d';
  const sources=['https://proxy.cors.dev/'+target,'https://api.allorigins.win/raw?url='+encodeURIComponent(target)];
  let err;
  for(const uri of sources){
