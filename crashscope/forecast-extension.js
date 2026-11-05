@@ -8,7 +8,7 @@ function ptxt(p){return Number.isFinite(p)?(100*p).toFixed(p<.01?2:1)+'%':'—';
 function money(v){if(!Number.isFinite(v))return '—';const isKR=/\.(KS|KQ)$/.test(state.ticker),isIdx=state.ticker.startsWith('^');return (isKR?'₩':isIdx?'':'$')+v.toLocaleString('en-US',{minimumFractionDigits:isKR||isIdx?0:2,maximumFractionDigits:isKR||isIdx?0:2});}
 function paths(){
  const a=state.series,n=a.length,last=a[n-1],H=63,blockLen=5,spot=last?.p;
- if(!state.fresh||n<290||!last?.has)return null;
+ if(!state.liveFresh||n<290||!last?.has)return null;
  const sigma=last.vol/100/Math.sqrt(252);
  if(!(sigma>0))return null;
  const cutoff=state.years==='all'?'0000-00-00':String(Number(last.d.slice(0,4))-Number(state.years))+'-'+last.d.slice(5);
@@ -53,11 +53,11 @@ const metricBox=document.getElementById('metrics');metricBox.parentNode.insertBe
 const options=document.getElementById('displaySelect');options.insertAdjacentHTML('afterbegin','<option value="path">경로 시뮬레이션 (가격 구간과 일치)</option>');state.mode='path';options.value='path';
 const oldCompute=compute;
 compute=function(){oldCompute();state.forecast=paths();for(const t of THRESHOLDS)for(const h of HORIZONS){const q=state.forecast?.byH[h.n];state.stats[sid(t,h.n)].path=q?(t===10?q.t10:q.t20):NaN;}};
-selectedVal=function(s){return state.fresh?(state.mode==='path'?s.path:s[state.mode]):NaN;};
+selectedVal=function(s){return state.liveFresh?(state.mode==='path'?s.path:s[state.mode]):NaN;};
 modelName=function(){return {path:'경로 시뮬레이션',logit:'로지스틱 모델',analog:'유사국면 빈도',base:'과거 발생률'}[state.mode]||state.mode;};
 function renderPred(){
  const f=state.forecast,info=document.getElementById('predictionStamp'),root=document.getElementById('predictionBody');
- if(!state.fresh||!f){info.textContent='최근 가격 또는 충분한 가격 이력이 없습니다.';root.textContent='최신 거래일 종가가 확인되지 않아 현재 확률과 예상 범위를 숨깁니다.';return;}
+ if(!state.liveFresh||!f){info.textContent='최근 가격 또는 충분한 가격 이력이 없습니다.';root.textContent='최신 거래일 종가가 확인되지 않아 현재 확률과 예상 범위를 숨깁니다.';return;}
  info.textContent=state.ticker+' · '+f.date+' 기준 종가 '+money(f.spot)+' · 과거 블록 '+f.numOld.toLocaleString()+'개 기반';
  let cards='',rows='';
  for(const h of HORIZONS){
